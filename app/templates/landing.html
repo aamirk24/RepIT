@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}RepIT{% endblock %}
+{% block stylesheet %} <link href="../static/css/landing.css" rel="stylesheet" type="text/css">{% endblock %}
+{% block content %}
+    <section class="hero-section">
+        <div class="hero-bg">
+            <img src="../static/background.jpg" alt="Background"/>
+        </div>
+        <div class="container hero-content">
+            <div class="text-center text-md-end">
+                <h1 class="heading heading-title fade-in-float fw-bold text-white mobile-title">START</h1>
+                <h1 class="heading heading-title fade-in-float fw-bold text-white mobile-title">UNKNOWN</h1>
+                <h1 class="heading heading-title fade-in-float fw-bold text-white mobile-title">FINISH</h1>
+                <h1 class="heading heading-title fade-in-float fw-bold text-white mobile-title mb-3">UNFORGETTABLE</h1>
+                <p class="fade-in-float fs-5 text-white mb-0">Embark on a journey to redefine your limits.</p>
+                <p class="fade-in-float fs-5 text-white mb-4">Your fitness story starts here.</p>
+                <a href="/signup" class="font-blatant fade-in-float btn btn-primary btn-lg px-4 py-2 px-md-5 py-md-3">SIGN UP</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row flex-column-reverse flex-md-row">
+                <div class="col-md-6 d-flex align-items-center justify-content-center mt-4 mt-md-0">
+                    <div class="text-center text-md-start">
+                        <h2 class="heading display-6 fw-bold">YOUR FITNESS.</h2>
+                        <h2 class="heading display-6 fw-bold">YOUR WAY.</h2>
+                        <h2 class="heading display-6 fw-bold mb-3">OUR TRACKER.</h2>
+                        <p class="fs-5 text-secondary text-center text-md-start" style="max-width: 300px; margin: 0 auto; margin-md-0;">Track your progress, crush your goals, and unleash the best version of yourself</p>
+                        <div class="text-center text-md-start">
+                            <a href="/signup" class="font-blatant btn btn-signup btn-lg px-4 py-2 px-md-5 py-md-3 mt-4">GET STARTED</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 d-flex align-items-center justify-content-center">
+                    <div>
+                        <img src="../static/image1.jpg" alt="image" class="img-fluid" style="max-height: 500px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5">
+        <div class="container">
+            <h2 class="font-blatant display-5 fw-bold text-center mb-5">BUILT TO MAKE YOU BETTER</h2>
+            <div class="row g-4">
+                <div class="col-12 col-md-4 text-center">
+                    <img src="../static/logo1.png" alt="Smarter Training Logo" class="img-fluid mb-3" style="max-height: 100px;">
+                    <h3 class="font-blatant fs-3 fw-bold mb-3">Smarter Training</h3>
+                    <p class="text-secondary">Our smarter training approach uses data-driven insights to help you optimize every workout. Track your progress, adjust your routine, and push your limits with ease.</p>
+                </div>
+                <div class="col-12 col-md-4 text-center">
+                    <img src="../static/logo2.png" alt="Custom Workouts Logo" class="img-fluid mb-3" style="max-height: 100px;">
+                    <h3 class="font-blatant fs-3 fw-bold mb-3">Custom Workouts</h3>
+                    <p class="text-secondary">Create personalized workout plans that cater to your unique fitness goals. Whether you're training for strength, endurance, or flexibility, we've got a plan that works for you.</p>
+                </div>
+                <div class="col-12 col-md-4 text-center">
+                    <img src="../static/logo3.png" alt="Strong Community Logo" class="img-fluid mb-3" style="max-height: 100px;">
+                    <h3 class="font-blatant fs-3 fw-bold mb-3">Strong Community</h3>
+                    <p class="text-secondary">Join a supportive and motivating community of fitness enthusiasts. Share your progress, get advice from experts, and stay motivated with friendly competition and encouragement.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row text-center g-4">
+                <div class="col-12 col-md-4 mb-3 mb-md-0">
+                    <h3 class="stats-number fw-bold mb-2">OFFLINE READY</h3>
+                    <p class="text-secondary">EXERCISE LIBRARY</p>
+                </div>
+                <div class="col-12 col-md-4 mb-3 mb-md-0">
+                    <h3 class="stats-number fw-bold mb-2">∞</h3>
+                    <p class="text-secondary">WORKOUT PLANS</p>
+                </div>
+                <div class="col-12 col-md-4">
+                    <h3 class="stats-number fw-bold mb-2">YOUR DATA</h3>
+                    <p class="text-secondary">WORKOUT HISTORY</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-dark-custom text-white py-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-6 col-md-3">
+                    <h4 class="fw-bold mb-3">Help</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/login" class="text-white text-decoration-none">Log In / Register</a></li>
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none">Support</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h4 class="fw-bold mb-3">About</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="https://linkedin.com/in/aamirkhan05" class="text-white text-decoration-none">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="../static/js/index.js"></script>
+
+{% endblock %}

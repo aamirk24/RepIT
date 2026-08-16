@@ -1,0 +1,54 @@
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+label {
+    font-weight:500;
+}
+
+.form-control:focus {
+        border-color: rgba(104, 58, 167, 0);
+        box-shadow: none;
+}
+
+.input-group {
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    transition: border-color 0.2s;
+}
+
+.input-group:focus-within {
+    border-color: #000000;
+    box-shadow: none;
+}
+
+a {
+    color: #000000;
+    text-decoration: none;
+}
+
+.radioSwitch .btn-check:checked + .btn {
+    background-color: #000000;
+    color: #FFFFFF;
+    border-color: #000000;
+}
+
+.radioSwitch .btn {
+    background-color: transparent;
+    color: #000000;
+    border-color: #000000;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.radioSwitch .btn:hover {
+    background-color: #A6A6A6FF;
+    color: #000000;
+    border-color: #000000;
+}
+
+.table-responsive{
+    border-radius: 5px;
+    overflow: hidden;
+}

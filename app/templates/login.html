@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block stylesheet %} <link href="../static/css/signup.css" rel="stylesheet" type="text/css"> {% endblock %}
+{% block title %} Login {% endblock %}
+{% block content %}
+<div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center">
+    <div class="col-md-6 d-flex align-items-center justify-content-center">
+        <div class="card-body p-4 p-lg-5">
+            <div class="mb-4 text-center">
+                <h4 class="mb-0 display-5 font-blatant">Log In</h4>
+            </div>
+
+            <form method="POST">
+                {{ form.hidden_tag() }}
+
+                <div class="my-5 mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent">
+                            <i class="bx bx-user text"></i>
+                        </span>
+                        {{ form.email(class="form-control login-field border-start-0 text", placeholder="Enter your email") }}
+                    </div>
+                    {% for error in form.email.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-4">
+                    <div class="input-group">
+                        <span class="input-group-text border-end-0 bg-transparent">
+                            <i class="bx bx-envelope text"></i>
+                        </span>
+                        {{ form.password(class="form-control login-field border-start-0 text", placeholder="Enter password") }}
+                    </div>
+                    {% for error in form.password.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                {{ form.submit(class="btn-signup w-100 py-2 mb-3") }}
+            </form>
+
+            <div class="text-center">
+                <small class="text">Dont have an account? <a class="link" href="{{ url_for('auth.signup') }}">Sign Up</a></small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

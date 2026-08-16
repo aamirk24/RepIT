@@ -1,0 +1,288 @@
+{% extends "profile.html" %}
+{% block title %} Measurements {% endblock %}
+{% block stylesheet %}
+    <link href="../static/css/profile.css" rel="stylesheet" type="text/css">
+{% endblock %}
+{% block measure %}|&nbsp;&nbsp;&nbsp;{% endblock %}
+{% block heading %}Measurements{% endblock %}
+{% block content %}
+    <div class="mt-2 py-1 d-flex justify-content-between align-items-center">
+        <h6 class="mt-2 py-1">
+            Log Height
+        </h6>
+        <div class="d-flex">
+            <div class="btn-group radioSwitch pe-2" role="group" aria-label="Basic radio toggle button group">
+                <input type="radio" class="btn-check" name="btnradioHeight" id="chartHeight" autocomplete="off" checked>
+                <label class="btn btn-outline-primary" for="chartHeight"><p class="text mb-0">Chart</p></label>
+
+                <input type="radio" class="btn-check" name="btnradioHeight" id="tableHeight" autocomplete="off">
+                <label class="btn btn-outline-primary" for="tableHeight"><p class="text mb-0">Table</p></label>
+            </div>
+            <button type="button" class="btn btn-delete d-flex justify-content-center align-items-center" data-bs-toggle="modal" data-bs-target="#heightForm">
+                +
+            </button>
+        </div>
+    </div>
+
+    <div class="card mb-4 heightCard">
+        <div class="card-body">
+            <canvas id="heightChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card mb-4 heightTable" id="heightTable">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover text-center">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Height (cm)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for height, date in height_data %}
+                            <tr>
+                                <td>{{ date }}</td>
+                                <td>{{ height }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="heightForm" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="staticBackdropLabel">Log Height</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form method="POST" action="{{ url_for('views.measurements') }}">
+              {{ heightForm.hidden_tag() }}
+                  <div class="mb-3">
+                      <label>Height</label>
+                      <div class="input-group">
+                          {{ heightForm.height(class="form-control login-field text", placeholder="Height (in cms)") }}
+                      </div>
+                      {% for error in heightForm.height.errors %}
+                          <div class="text-danger small mt-1">{{ error }}</div>
+                      {% endfor %}
+                  </div>
+
+                  <div class="mb-3">
+                      <label>Date</label>
+                      <div class="input-group">
+                          {{ heightForm.date(class="form-control login-field text", placeholder="dd-mm-yyyy") }}
+                      </div>
+                      {% for error in heightForm.date.errors %}
+                          <div class="text-danger small mt-1">{{ error }}</div>
+                      {% endfor %}
+                  </div>
+
+                  <div class="modal-footer">
+                      {{ heightForm.submit(class="btn btn-signup w-100 py-2 mb-3", type="submit") }}
+                  </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="my-1 py-1 d-flex justify-content-between align-items-center">
+        <h6 class="my-1 py-1">
+            Log Weight
+        </h6>
+        <div class="d-flex">
+            <div class="btn-group radioSwitch pe-2" role="group" aria-label="Basic radio toggle button group">
+                <input type="radio" class="btn-check" name="btnradioWeight" id="chartWeight" autocomplete="off" checked>
+                <label class="btn btn-outline-primary" for="chartWeight"><p class="text mb-0">Chart</p></label>
+
+                <input type="radio" class="btn-check" name="btnradioWeight" id="tableWeight" autocomplete="off">
+                <label class="btn btn-outline-primary" for="tableWeight"><p class="text mb-0">Table</p></label>
+            </div>
+            <button type="button" class="btn btn-delete d-flex justify-content-center align-items-center" data-bs-toggle="modal" data-bs-target="#weightForm">
+                +
+            </button>
+        </div>
+    </div>
+
+    <div class="card weightCard mb-4">
+        <div class="card-body">
+            <canvas id="weightChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card mb-4 weightTable" id="weightTable">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover text-center">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Weight (kg)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for weight, date in weight_data %}
+                            <tr>
+                                <td>{{ date }}</td>
+                                <td>{{ weight }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="weightForm" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="staticBackdropLabel">Log Height</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form method="POST" action="{{ url_for('views.measurements') }}">
+              {{ weightForm.hidden_tag() }}
+                  <div class="mb-3">
+                      <label>Weight</label>
+                      <div class="input-group">
+                          {{ weightForm.weight(class="form-control login-field text", placeholder="Weight (in kgs)") }}
+                      </div>
+                      {% for error in weightForm.weight.errors %}
+                          <div class="text-danger small mt-1">{{ error }}</div>
+                      {% endfor %}
+                  </div>
+
+                  <div class="mb-3">
+                      <label>Date</label>
+                      <div class="input-group">
+                          {{ weightForm.date(class="form-control login-field text", placeholder="dd-mm-yyyy") }}
+                      </div>
+                      {% for error in weightForm.date.errors %}
+                          <div class="text-danger small mt-1">{{ error }}</div>
+                      {% endfor %}
+                  </div>
+
+                  <div class="modal-footer">
+                      {{ weightForm.submit(class="btn btn-signup w-100 py-2 mb-3", type="submit") }}
+                  </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Height Chart
+        var heightCtx = document.getElementById('heightChart').getContext('2d');
+        new Chart(heightCtx, {
+            type: 'line',
+            data: {
+                labels: {{ height_dates|tojson|safe }},
+                datasets: [{
+                    label: 'Height (cm)',
+                    data: {{ heights|tojson|safe }},
+                    borderColor: 'black',
+                    tension: 0
+                }]
+            },
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: "Height Chart"
+                    },
+                    legend: {
+                        display: false
+                    },
+                },
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+
+        // Weight Chart
+        var weightCtx = document.getElementById('weightChart').getContext('2d');
+        new Chart(weightCtx, {
+            type: 'line',
+            data: {
+                labels: {{ weight_dates|tojson|safe }},
+                datasets: [{
+                    label: 'Weight (kg)',
+                    data: {{ weights|tojson|safe }},
+                    borderColor: 'black',
+                    tension: 0
+                }]
+            },
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: "Weight Chart"
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+    });
+
+    const chartHeight = document.getElementById("chartHeight");
+    const tableHeight = document.getElementById("tableHeight");
+    const chartWeight = document.getElementById("chartWeight");
+    const tableWeight = document.getElementById("tableWeight");
+
+    const weightTable = document.getElementById("weightTable");
+    const weightChart = document.querySelector(".weightCard");
+    const heightTable = document.getElementById("heightTable");
+    const heightChart = document.querySelector(".heightCard");
+
+    weightTable.style.display ="none";
+    heightTable.style.display ="none";
+
+    function switchView(){
+        if (chartHeight.checked){
+            heightChart.style.display = "block";
+            heightTable.style.display = "none";
+        } else if (tableHeight.checked) {
+            heightChart.style.display = "none";
+            heightTable.style.display = "block";
+        }
+
+        if (chartWeight.checked){
+            weightChart.style.display = "block";
+            weightTable.style.display = "none";
+        } else if (tableWeight.checked) {
+            weightChart.style.display = "none";
+            weightTable.style.display = "block";
+        }
+    }
+
+    chartHeight.addEventListener("change", switchView);
+    tableHeight.addEventListener("change", switchView);
+    chartWeight.addEventListener("change", switchView);
+    tableWeight.addEventListener("change", switchView);
+
+    </script>
+{% endblock %}

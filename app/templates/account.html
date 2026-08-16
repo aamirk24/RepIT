@@ -1,0 +1,38 @@
+{% extends "profile.html" %}
+{% block title %} Account {% endblock %}
+{% block stylesheet %}
+    <link href="../static/css/profile.css" rel="stylesheet" type="text/css">
+{% endblock %}
+{% block account %}|&nbsp;&nbsp;&nbsp;{% endblock %}
+{% block heading %}Account{% endblock %}
+{% block content %}
+<div>
+    <p class="mt-4">Deleting your account is instant and permanent. You will not be able to regain access to your account or your fitness data. Please make sure you are ready to permanently delete before proceeding.</p>
+    <button type="button" class="btn btn-sm btn-delete" data-bs-toggle="modal" data-bs-target="#deleteModal">
+        DELETE YOUR ACCOUNT
+    </button>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to <strong><u>delete your account</u></strong>?
+                </div>
+                <div class="modal-footer">
+                    <form method="POST" action="{{ url_for('views.delete_account') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-delete">
+                           DELETE YOUR ACCOUNT
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

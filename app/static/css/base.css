@@ -1,0 +1,52 @@
+@font-face{
+    font-family: Blatant;
+    src: url(../Blatant.otf)
+}
+
+@font-face{
+    font-family: Blatant;
+    src: url(../Blatant-Bold.otf);
+    font-weight: bold;
+}
+
+.font-blatant {
+    font-family: Blatant;
+}
+
+.btn-login {
+    color: #000000;
+    border-radius: 5px;
+}
+
+.btn-login:hover {
+    background-color: rgb(0,0,0,0.15);
+}
+
+.btn-signup {
+    color: #ffffff;
+    background-color: #000000;
+    border-width:2px;
+    border-radius: 5px;
+}
+
+.btn-signup:hover {
+    background-color: rgb(255,255,255);
+    color: #000000;
+    border-width: 2px;
+    border-color: #000000;
+}
+
+.login-field {
+    height: 45px;
+}
+
+.btn-delete{
+    color: #000000;
+    background-color: #FFFFFF;
+    border-color: #000000;
+}
+
+.btn-delete:hover {
+    background-color: #000000;
+    color: #FFFFFF;
+}

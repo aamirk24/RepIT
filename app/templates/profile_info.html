@@ -1,0 +1,87 @@
+{% extends "profile.html" %}
+{% block stylesheet %}
+    <link href="../static/css/profile.css" rel="stylesheet" type="text/css">
+{% endblock %}
+{% block title %} Profile - Info {% endblock %}
+{% block info %}|&nbsp;&nbsp;&nbsp;{% endblock %}
+{% block heading %}Profile Information{% endblock %}
+
+{% block content %}
+<form method="POST" action="{{ url_for('views.profile_info') }}">
+    {{ form.hidden_tag() }}
+
+    <div class="mt-4 mb-3">
+        <label>First Name</label>
+        <div class="input-group">
+            {{ form.first_name(class="form-control login-field text", value=user.first_name) }}
+        </div>
+        {% for error in form.first_name.errors %}
+            <div class="text-danger small mt-1">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="mb-3">
+        <label>Username</label>
+        <div class="input-group">
+            {{ form.username(class="form-control login-field text", value=user.username) }}
+        </div>
+        {% for error in form.username.errors %}
+            <div class="text-danger small mt-1">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="mb-3">
+        <label>Birthdate</label>
+        <div class="input-group">
+            {{ form.birthdate(class="form-control login-field text", placeholder=user.birthdate) }}
+        </div>
+        {% for error in form.birthdate.errors %}
+            <div class="text-danger small mt-1">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="mb-3">
+        <label>Gender</label>
+        <div class="input-group">
+            {{ form.gender(class="form-control login-field text", placeholder=user.gender) }}
+        </div>
+        {% for error in form.gender.errors %}
+            <div class="text-danger small mt-1">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-lg-6">
+            <label>City</label>
+            <div class="input-group">
+                {{ form.city(class="form-control login-field text", placeholder=user.city) }}
+            </div>
+            {% for error in form.city.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="col-lg-6">
+            <label>County</label>
+            <div class="input-group">
+                {{ form.county(class="form-control login-field text", placeholder=user.county) }}
+            </div>
+            {% for error in form.county.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>Country</label>
+        <div class="input-group">
+            {{ form.country(class="form-control login-field text", placeholder=user.country) }}
+        </div>
+        {% for error in form.country.errors %}
+            <div class="text-danger small mt-1">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    {{ form.submit(class="btn-signup w-100 py-2 mb-3") }}
+</form>
+{% endblock %}

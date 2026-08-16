@@ -1,0 +1,109 @@
+.interactive-card {
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.interactive-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.modal-body ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+.modal-body li {
+    margin-bottom: 0.5rem;
+}
+.name {
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+}
+.target{
+    padding-top: 0px;
+    margin-top: 0px;
+    padding-bottom: -5px;
+    margin-bottom: -5px;
+    font-style: italic;
+    font-size: 14px;
+}
+.target2{
+    font-style: italic;
+    font-size: 14px;
+}
+
+img {
+    max-height: 100px;
+    max-width: 100px;
+}
+info {
+    font-size: 5px;
+}
+
+.font-small {
+    font-size: 14px;
+}
+/* Responsive Breakpoints */
+@media (max-width: 991.98px) {
+    /* Adjust layout for tablets and smaller screens */
+
+    .col-lg-8, .col-lg-4 {
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .workout-card .btn-delete {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    /* Mobile-specific adjustments */
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .card-body {
+        padding: 0.75rem;
+    }
+
+    .btn-signup {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    /* Adjust buttons in Quick Start section */
+    .col-lg-5.mb-3 {
+        width: 48%;
+        margin: 0 1%;
+        margin-bottom: 0.75rem !important;
+    }
+
+    .quick-start-buttons {
+        flex-wrap: wrap;
+        justify-content: center !important;
+    }
+
+    .quick-start-buttons a {
+        margin-bottom: 0.75rem !important;
+    }
+}
+
+/* Ensure responsive images */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Improve text readability on smaller screens */
+@media (max-width: 576px) {
+    .display-5 {
+        font-size: 1.8rem;
+    }
+
+    .card-title, .modal-title {
+        font-size: 1.1rem;
+    }
+}

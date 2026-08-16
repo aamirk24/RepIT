@@ -1,0 +1,19 @@
+.form-control:focus {
+        border-color: rgba(104, 58, 167, 0);
+        box-shadow: none;
+}
+
+.input-group {
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    transition: border-color 0.2s;
+}
+
+.input-group:focus-within {
+    border-color: #000000;
+    box-shadow: none;
+}
+
+.link {
+    color: #000000;
+}

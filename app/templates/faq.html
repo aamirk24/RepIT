@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+{% block title %} Frequently Asked Questions {% endblock %}
+{% block css %}
+    <style>
+        .accordion-button {
+            padding: 1.5rem 0;
+            font-weight: bold;
+            font-size: 1.25rem;
+            color: #000;
+        }
+
+        .accordion-button:not(.collapsed) {
+            color: #000;
+            background-color: transparent;
+            box-shadow: none;
+        }
+
+        .accordion-button:focus {
+            box-shadow: none;
+        }
+
+        hr {
+            opacity: 0.1;
+            margin-bottom: 0;
+        }
+
+        .accordion-item {
+            border-left: 0;
+            border-right: 0;
+        }
+
+        .questions {
+            width: 100%;
+            max-width: 800px; /* Adjust as needed */
+            margin: 0 auto;
+        }
+
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <h2 class="font-blatant display-5 text-center my-4 mb-2">Frequently Asked Questions</h2>
+        <div class="questions my-5">
+            <h4 class="mb-3">Getting Started</h4>
+            <div class="accordion accordion-flush" id="accordionFlushExample">
+
+              <div class="accordion-item border-bottom">
+                <div class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                      How do I create an account?
+                  </button>
+                </div>
+                <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                  <div class="accordion-body">Creating an account is quick and easy!
+                      Simply click the "Sign Up" button on our homepage,
+                      provide your email address, choose a secure password,
+                      and complete the verification process. You'll need to verify
+                      your email and provide some basic contact information to start bidding or listing items.</div>
+                </div>
+              </div>
+              <div class="accordion-item border-bottom">
+                <h2 class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+                    Is it free to register?
+                  </button>
+                </h2>
+                <div id="flush-collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                  <div class="accordion-body">Yes, creating an account is completely free.
+                      However, there may be fees associated with listing certain items or
+                      when you successfully sell an item.</div>
+                </div>
+              </div>
+            </div>
+
+            <h4 class="mb-3 my-5">Bidding Process</h4>
+            <div class="accordion accordion-flush" id="accordionFlushExampleTwo">
+
+              <div class="accordion-item border-bottom">
+                <h4 class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseOne">
+                      How do I place a bid?
+                  </button>
+                </h4>
+                <div id="flush-collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExampleTwo">
+                  <div class="accordion-body">To place a bid, navigate to the item you're interested in and
+                      click the "Place Bid" button. Enter the amount you're willing to pay,
+                      which must be higher than the current highest bid. You can also set up
+                      automatic bidding to help you stay competitive without constantly monitoring the auction.</div>
+                </div>
+              </div>
+
+              <div class="accordion-item border-bottom">
+                <h4 class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseFour" aria-expanded="false" aria-controls="flush-collapseTwo">
+                    What is a proxy bid?
+                  </button>
+                </h4>
+                <div id="flush-collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExampleTwo">
+                  <div class="accordion-body">A proxy bid allows you to set your maximum bid amount.
+                      Our system will automatically increase your bid incrementally to maintain your
+                      position as the highest bidder, up to your maximum amount. This helps you stay
+                      competitive without constantly watching the auction.</div>
+                </div>
+              </div>
+
+              <div class="accordion-item border-bottom">
+                <h4 class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseFive" aria-expanded="false" aria-controls="flush-collapseTwo">
+                    Can I retract a bid?
+                  </button>
+                </h4>
+                <div id="flush-collapseFive" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExampleTwo">
+                  <div class="accordion-body">Generally, bids cannot be retracted once placed. This protects
+                      sellers from fraudulent bidding and ensures a fair auction process.
+                      Please bid carefully and only on items you're genuinely interested in purchasing.</div>
+                </div>
+              </div>
+            </div>
+
+            <h4 class="mb-3 my-5">Selling Items</h4>
+            <div class="accordion accordion-flush" id="accordionFlushExampleThree">
+              <div class="accordion-item border-bottom">
+                <h4 class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseSix" aria-expanded="false" aria-controls="flush-collapseOne">
+                      How do I list an item for auction?
+                  </button>
+                </h4>
+                <div id="flush-collapseSix" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExampleThree">
+                  <div class="accordion-body">To list an item, click the "Sell" or "List Item" button. You'll need to:
+                      <ul>
+                          <li>Upload clear, high-quality photos</li>
+                          <li>Write a detailed description</li>
+                          <li>Set a starting price</li>
+                          <li>Choose auction duration</li>
+
+                      </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="accordion-item border-bottom">
+                <h4 class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseSeven" aria-expanded="false" aria-controls="flush-collapseTwo">
+                    Are there fees for selling?
+                  </button>
+                </h4>
+                <div id="flush-collapseSeven" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExampleThree">
+                  <div class="accordion-body">We charge a small listing fee for most items and a final value
+                      fee when your item sells. The final value fee is a percentage of the final selling price.
+                      Exact fees vary by item category and selling price.</div>
+                </div>
+              </div>
+            </div>
+
+            <h4 class="mb-3 my-5">Payments and Shipping</h4>
+            <div class="accordion accordion-flush" id="accordionFlushExampleFour">
+
+              <div class="accordion-item border-bottom">
+                <h4 class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseEight" aria-expanded="false" aria-controls="flush-collapseOne">
+                      What payment methods do you accept?
+                  </button>
+                </h4>
+                <div id="flush-collapseEight" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExampleFour">
+                  <div class="accordion-body">We accept major credit cards, PayPal, and bank transfers.
+                      Each listing may have specific payment instructions from the seller.
+                      Always review payment terms before completing a purchase.</div>
+                </div>
+              </div>
+
+              <div class="accordion-item border-bottom">
+                <h4 class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseNine" aria-expanded="false" aria-controls="flush-collapseTwo">
+                    How does shipping work?
+                  </button>
+                </h4>
+                <div id="flush-collapseNine" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExampleFour">
+                  <div class="accordion-body">Shipping methods and costs are determined by individual sellers.
+                      Some offer free shipping, while others may charge a shipping fee.
+                      The shipping details are clearly displayed with each auction listing.</div>
+                </div>
+              </div>
+            </div>
+
+            <h4 class="mb-3 my-5">Account Security</h4>
+            <div class="accordion accordion-flush" id="accordionFlushExampleFive">
+
+              <div class="accordion-item border-bottom">
+                <h4 class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTen" aria-expanded="false" aria-controls="flush-collapseOne">
+                      How do you protect my personal information?
+                  </button>
+                </h4>
+                <div id="flush-collapseTen" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExampleFive">
+                  <div class="accordion-body">We use industry-standard encryption and security protocols
+                      to protect your personal and financial information.
+                      We never share your data with third parties without your consent.</div>
+                </div>
+              </div>
+
+              <div class="accordion-item border-bottom">
+                <h4 class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseEleven" aria-expanded="false" aria-controls="flush-collapseTwo">
+                    What if I suspect fraudulent activity?
+                  </button>
+                </h4>
+                <div id="flush-collapseEleven" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExampleFive">
+                  <div class="accordion-body">If you notice any suspicious activity, immediately contact our customer support team.
+                      We have dedicated fraud prevention measures and will help investigate any potential issues.</div>
+                </div>
+              </div>
+            </div>
+
+            <h4 class="mb-3 my-5">Dispute Resolution</h4>
+            <div class="accordion accordion-flush" id="accordionFlushExampleSix">
+
+              <div class="accordion-item border-bottom">
+                <h4 class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwelve" aria-expanded="false" aria-controls="flush-collapseOne">
+                      What happens if an item is not as described?
+                  </button>
+                </h4>
+                <div id="flush-collapseTwelve" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExampleSix">
+                  <div class="accordion-body">We have a comprehensive buyer protection program.
+                      If an item significantly differs from its description, you can open a dispute.
+                      Our team will mediate between buyer and seller to find a fair resolution.</div>
+                </div>
+              </div>
+
+              <div class="accordion-item border-bottom">
+                <h4 class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThirteen" aria-expanded="false" aria-controls="flush-collapseTwo">
+                    How do I resolve issues with a transaction?
+                  </button>
+                </h4>
+                <div id="flush-collapseThirteen" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExampleSix">
+                  <div class="accordion-body">First, communicate directly with the other party.
+                      If you can't reach a resolution, contact our customer support with details of the transaction.
+                      We'll review the case and provide guidance.</div>
+                </div>
+              </div>
+            </div>
+
+            <h4 class="mb-3 my-5">Technical Support</h4>
+            <div class="accordion accordion-flush" id="accordionFlushExampleSeven">
+
+              <div class="accordion-item border-bottom">
+                <h4 class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseFourteen" aria-expanded="false" aria-controls="flush-collapseOne">
+                      What devices can I use to access the auction site?
+                  </button>
+                </h4>
+                <div id="flush-collapseFourteen" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExampleSeven">
+                  <div class="accordion-body">Our platform is fully responsive and works on desktop computers,
+                      tablets, and mobile phones. You can bid, list items, and manage your
+                      account from any device with an internet connection.</div>
+                </div>
+              </div>
+
+              <div class="accordion-item border-bottom">
+                <h4 class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseFifteen" aria-expanded="false" aria-controls="flush-collapseTwo">
+                     I'm having trouble logging in. What should I do?
+                  </button>
+                </h4>
+                <div id="flush-collapseFifteen" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExampleSeven">
+                  <div class="accordion-body">If you're experiencing login issues:
+                    <ul>
+                      <li>Upload clear, high-quality photos</li>
+                      <li>Write a detailed description</li>
+                      <li>Set a starting price</li>
+                      <li>Choose auction duration</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <h4 class="mb-3 my-5">Legal Policies</h4>
+            <div class="accordion accordion-flush" id="accordionFlushExampleEight">
+
+              <div class="accordion-item border-bottom">
+                <h4 class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseSixteen" aria-expanded="false" aria-controls="flush-collapseOne">
+                      What are your terms of service?
+                  </button>
+                </h4>
+                <div id="flush-collapseSixteen" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExampleEight">
+                  <div class="accordion-body">Our full terms of service are available on a dedicated page.
+                      Key points include: users must be 18 or older, all transactions are binding, and we
+                      reserve the right to remove listings or suspend accounts that violate our policies.</div>
+                </div>
+              </div>
+
+              <div class="accordion-item border-bottom">
+                <h4 class="accordion-header d-flex justify-content-between align-items-center">
+                  <button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseSeventeen" aria-expanded="false" aria-controls="flush-collapseTwo">
+                    Do you have a privacy policy?
+                  </button>
+                </h4>
+                <div id="flush-collapseSeventeen" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExampleEight">
+                  <div class="accordion-body">Yes, our comprehensive privacy policy outlines
+                      how we collect, use, and protect your personal information.
+                      We are committed to transparency and data protection.</div>
+                </div>
+              </div>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}

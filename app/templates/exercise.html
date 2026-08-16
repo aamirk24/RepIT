@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %} Exercises {% endblock %}
+{% block content %}
+<div class="container">
+    <h2 class="font-blatant display-5 text-center my-4 mb-2">Exercise Library</h2>
+    <div class="row mb-4">
+        <div class="col-md-6 offset-md-3">
+            <input type="text" id="exerciseSearch" class="form-control" placeholder="Search exercises...">
+        </div>
+    </div>
+
+    <div class="row" id="exerciseGrid">
+        {% for exercise in exercises %}
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4 exercise-card"
+            data-name="{{ exercise.name.lower() }}"
+            data-target="{{ exercise.target.lower() }}">
+            <div class="card" data-bs-toggle="modal" data-bs-target="#exerciseModal{{ exercise.id }}">
+                {% if exercise.gifUrl %}<img src="{{ exercise.gifUrl }}" class="card-img-top" alt="{{ exercise.name }}">{% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ exercise.name.title() }}</h5>
+                    <p class="card-text">
+                        Target: {{ exercise.target.title() }}<br>
+                        Secondary:
+                        {% for i in range(exercise.secondaryMuscles|length) %}
+                            {% if i != exercise.secondaryMuscles|length - 1 %}
+                                {{ exercise.secondaryMuscles[i].title() }},
+                            {% else %}
+                                {{ exercise.secondaryMuscles[i].title() }}
+                            {% endif %}
+                        {% endfor %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% for exercise in exercises %}
+            <div class="modal fade" id="exerciseModal{{ exercise.id }}" tabindex="-1" aria-labelledby="exerciseModalLabel{{ exercise.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exerciseModalLabel{{ exercise.id }}">{{ exercise.name.title() }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <p class="mb-0"><strong>Primary Muscle:</strong> {{ exercise.target.title() }}</p>
+                                </div>
+                            </div>
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <p class="mb-0"><strong>Secondary Muscles:</strong>
+                                    {% for i in range(exercise.secondaryMuscles|length) %}
+                                        {% if i != exercise.secondaryMuscles|length - 1 %}
+                                            {{ exercise.secondaryMuscles[i].title() }},
+                                        {% else %}
+                                            {{ exercise.secondaryMuscles[i].title() }}
+                                        {% endif %}
+                                    {% endfor %}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <p class="mb-0"><strong>Description:<br></strong>
+                                    {% for i in range(exercise.instructions|length) %}
+                                            {{ i + 1 }}. {{ exercise.instructions[i] }} <br>
+                                    {% endfor %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}
