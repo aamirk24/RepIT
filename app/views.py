@@ -55,7 +55,9 @@ def dashboard():
 @views.route("/exercise")
 @login_required
 def exercise_library():
-    exercises = db.session.scalars(db.select(Exercise).order_by(Exercise.name)).all()
+    exercises = db.session.scalars(
+        db.select(Exercise).where(Exercise.is_active.is_(True)).order_by(Exercise.name)
+    ).all()
     return render_template("exercise.html", exercises=exercises, user=current_user)
 
 
@@ -64,13 +66,27 @@ def exercise_library():
 def get_all_exercises():
     page = max(request.args.get("page", 1, type=int), 1)
     per_page = min(max(request.args.get("per_page", 10, type=int), 1), 100)
-    result = db.paginate(db.select(Exercise).order_by(Exercise.name), page=page, per_page=per_page, error_out=False)
+    query = db.select(Exercise).where(Exercise.is_active.is_(True))
+    search = request.args.get("q", "").strip()
+    if search:
+        query = query.where(Exercise.name.ilike(f"%{search}%"))
+    for field in ("body_part", "equipment", "difficulty", "category"):
+        value = request.args.get(field, "").strip().lower()
+        if value:
+            query = query.where(getattr(Exercise, field) == value)
+    result = db.paginate(query.order_by(Exercise.name), page=page, per_page=per_page, error_out=False)
     return jsonify(
         exercises=[
             {
                 "id": item.id,
                 "name": item.name,
+                "slug": item.slug,
+                "description": item.description,
+                "bodyPart": item.body_part,
                 "target": item.target,
+                "equipment": item.equipment,
+                "difficulty": item.difficulty,
+                "category": item.category,
                 "secondaryMuscles": item.secondary_muscles,
                 "instructions": item.instructions,
                 "gifUrl": item.image_url,
@@ -87,10 +103,14 @@ def get_all_exercises():
 @login_required
 def create_workout():
     form = WorkoutForm()
-    exercises = db.session.scalars(db.select(Exercise).order_by(Exercise.name)).all()
+    exercises = db.session.scalars(
+        db.select(Exercise).where(Exercise.is_active.is_(True)).order_by(Exercise.name)
+    ).all()
     form.exercises.choices = [(item.id, item.name) for item in exercises]
     if form.validate_on_submit():
-        selected = db.session.scalars(db.select(Exercise).where(Exercise.id.in_(form.exercises.data))).all()
+        selected = db.session.scalars(
+            db.select(Exercise).where(Exercise.id.in_(form.exercises.data), Exercise.is_active.is_(True))
+        ).all()
         if len(selected) != len(set(form.exercises.data)):
             abort(400)
         workout = Workout(
@@ -156,7 +176,9 @@ def tracking():
     workouts = db.session.scalars(
         db.select(Workout).where(Workout.creator_id == current_user.id).order_by(Workout.name)
     ).all()
-    exercises = db.session.scalars(db.select(Exercise).order_by(Exercise.name)).all()
+    exercises = db.session.scalars(
+        db.select(Exercise).where(Exercise.is_active.is_(True)).order_by(Exercise.name)
+    ).all()
     recent_sessions = db.session.scalars(
         db.select(WorkoutSession)
         .where(WorkoutSession.user_id == current_user.id)

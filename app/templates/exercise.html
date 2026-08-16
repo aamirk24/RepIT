@@ -6,6 +6,7 @@
     <div class="row mb-4">
         <div class="col-md-6 offset-md-3">
             <input type="text" id="exerciseSearch" class="form-control" placeholder="Search exercises...">
+            <p id="exerciseCount" class="text-muted text-center mt-2">{{ exercises|length }} exercises</p>
         </div>
     </div>
 
@@ -13,13 +14,15 @@
         {% for exercise in exercises %}
         <div class="col-lg-3 col-md-4 col-sm-6 mb-4 exercise-card"
             data-name="{{ exercise.name.lower() }}"
-            data-target="{{ exercise.target.lower() }}">
+            data-target="{{ exercise.target.lower() }} {{ exercise.body_part.lower() }} {{ exercise.equipment.lower() }} {{ exercise.category.lower() }}">
             <div class="card" data-bs-toggle="modal" data-bs-target="#exerciseModal{{ exercise.id }}">
                 {% if exercise.gifUrl %}<img src="{{ exercise.gifUrl }}" class="card-img-top" alt="{{ exercise.name }}">{% endif %}
                 <div class="card-body">
                     <h5 class="card-title">{{ exercise.name.title() }}</h5>
                     <p class="card-text">
                         Target: {{ exercise.target.title() }}<br>
+                        Equipment: {{ exercise.equipment.title() }}<br>
+                        Difficulty: {{ exercise.difficulty.title() }}<br>
                         Secondary:
                         {% for i in range(exercise.secondaryMuscles|length) %}
                             {% if i != exercise.secondaryMuscles|length - 1 %}
@@ -45,7 +48,10 @@
                         <div class="modal-body">
                             <div class="card mb-3">
                                 <div class="card-body">
+                                    <p><strong>{{ exercise.description }}</strong></p>
                                     <p class="mb-0"><strong>Primary Muscle:</strong> {{ exercise.target.title() }}</p>
+                                    <p class="mb-0"><strong>Equipment:</strong> {{ exercise.equipment.title() }}</p>
+                                    <p class="mb-0"><strong>Difficulty:</strong> {{ exercise.difficulty.title() }}</p>
                                 </div>
                             </div>
                             <div class="card mb-3">
@@ -61,6 +67,9 @@
                                     </p>
                                 </div>
                             </div>
+                            {% if exercise.has_attribution %}
+                            <p class="small text-muted">{{ exercise.attribution_text }}</p>
+                            {% endif %}
                             <div class="card mb-3">
                                 <div class="card-body">
                                     <p class="mb-0"><strong>Description:<br></strong>

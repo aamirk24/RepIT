@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 from flask import Flask
@@ -7,6 +6,8 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 
+from .config import CONFIGS
+
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -14,21 +15,22 @@ csrf = CSRFProtect()
 login_manager = LoginManager()
 
 
-class Config:
-    SECRET_KEY = os.environ.get("SECRET_KEY", "development-only-change-me")
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = "Lax"
-
-
-def create_app(test_config=None):
+def create_app(test_config=None, environment=None):
     app = Flask(__name__, instance_relative_config=True)
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
 
-    app.config.from_object(Config)
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
-        "DATABASE_URL", f"sqlite:///{Path(app.instance_path) / 'repit.db'}"
-    )
+    import os
+
+    environment = environment or os.environ.get("APP_ENV", "development").lower()
+    config_class = CONFIGS.get(environment)
+    if config_class is None:
+        raise RuntimeError(f"Unknown APP_ENV '{environment}'.")
+    app.config.from_object(config_class)
+    app.config["APP_ENV"] = environment
+    if environment == "development":
+        app.config["SQLALCHEMY_DATABASE_URI"] = config_class.database_uri(app.instance_path)
+    elif environment == "production":
+        app.config.update(config_class.validate(app.instance_path))
     if test_config:
         app.config.update(test_config)
 
@@ -55,8 +57,12 @@ def create_app(test_config=None):
 
     @app.cli.command("seed-exercises")
     def seed_exercises_command():
-        """Add RepIT's small, original development exercise catalogue."""
-        created = seed_exercises()
-        print(f"Added {created} exercises.")
+        """Synchronise the configured exercise catalogue into RepIT."""
+        result = seed_exercises()
+        print(f"Exercise catalogue synced: {result.created} added, {result.updated} updated.")
+
+    @app.get("/health")
+    def health():
+        return {"status": "ok", "environment": app.config["APP_ENV"]}
 
     return app

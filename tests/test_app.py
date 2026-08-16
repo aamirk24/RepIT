@@ -1,8 +1,11 @@
+import os
 import unittest
+from unittest.mock import patch
 
 from app import create_app, db
 from app.models import Exercise, ExerciseSet, Height, SessionExercise, User, Weight, Workout, WorkoutSession
-from app.seed import seed_exercises
+from app.seed import CATALOG_SOURCE, EXERCISES, seed_exercises
+from app.config import normalize_database_url
 
 
 class RepITTestCase(unittest.TestCase):
@@ -42,7 +45,69 @@ class RepITTestCase(unittest.TestCase):
         response = self.client.get("/landing")
         self.assertEqual(response.status_code, 200)
         with self.app.app_context():
-            self.assertEqual(db.session.scalar(db.select(db.func.count(Exercise.id))), 20)
+            self.assertEqual(db.session.scalar(db.select(db.func.count(Exercise.id))), len(EXERCISES))
+
+    def test_catalogue_seed_is_idempotent_and_versioned(self):
+        with self.app.app_context():
+            result = seed_exercises()
+            self.assertEqual(result.created, 0)
+            self.assertEqual(result.updated, 0)
+            exercise = db.session.scalar(db.select(Exercise).where(Exercise.slug == "barbell-back-squat"))
+            self.assertEqual(exercise.source, CATALOG_SOURCE)
+            self.assertEqual(exercise.catalog_version, "2026.08.1")
+            self.assertTrue(exercise.description)
+            self.assertTrue(exercise.is_active)
+
+    def test_catalogue_sync_accepts_an_external_provider(self):
+        record = dict(EXERCISES[0])
+        record.update(
+            source="test-provider",
+            source_identifier="provider-001",
+            slug="provider-squat",
+            name="Provider Squat",
+        )
+
+        class TestProvider:
+            source = "test-provider"
+
+            def records(self):
+                return [record]
+
+        with self.app.app_context():
+            result = seed_exercises(TestProvider())
+            self.assertEqual(result.created, 1)
+            synced = db.session.scalar(
+                db.select(Exercise).where(
+                    Exercise.source == "test-provider",
+                    Exercise.source_identifier == "provider-001",
+                )
+            )
+            self.assertEqual(synced.name, "Provider Squat")
+
+    def test_exercise_api_supports_catalogue_filters(self):
+        self.signup()
+        response = self.client.get("/exercises?equipment=barbell&difficulty=intermediate&per_page=100")
+        self.assertEqual(response.status_code, 200)
+        exercises = response.get_json()["exercises"]
+        self.assertGreater(len(exercises), 0)
+        self.assertTrue(all(item["equipment"] == "barbell" for item in exercises))
+        self.assertTrue(all(item["difficulty"] == "intermediate" for item in exercises))
+
+    def test_health_endpoint(self):
+        response = self.client.get("/health")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["status"], "ok")
+
+    def test_postgres_urls_use_psycopg3(self):
+        self.assertEqual(
+            normalize_database_url("postgres://localhost/repit"),
+            "postgresql+psycopg://localhost/repit",
+        )
+
+    def test_production_configuration_fails_closed(self):
+        with patch.dict(os.environ, {}, clear=True):
+            with self.assertRaisesRegex(RuntimeError, "SECRET_KEY"):
+                create_app(environment="production")
 
     def test_signup_login_logout_and_protected_route(self):
         self.assertEqual(self.client.get("/").status_code, 302)

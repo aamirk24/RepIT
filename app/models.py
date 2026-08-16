@@ -31,13 +31,45 @@ class User(db.Model, UserMixin):
 
 
 class Exercise(db.Model):
+    __table_args__ = (
+        db.UniqueConstraint("source", "source_identifier", name="uq_exercise_source_identifier"),
+        db.CheckConstraint(
+            "difficulty IN ('beginner', 'intermediate', 'advanced')",
+            name="ck_exercise_difficulty",
+        ),
+        db.CheckConstraint(
+            "category IN ('strength', 'cardio', 'mobility', 'balance', 'stretching', 'plyometrics', 'rehabilitation', 'stability')",
+            name="ck_exercise_category",
+        ),
+    )
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), unique=True, nullable=False, index=True)
+    slug = db.Column(db.String(180), unique=True, nullable=False, index=True)
+    description = db.Column(db.Text, nullable=False)
+    body_part = db.Column(db.String(100), nullable=False, index=True)
     target = db.Column(db.String(150), nullable=False)
+    equipment = db.Column(db.String(100), nullable=False, index=True)
+    difficulty = db.Column(db.String(30), nullable=False, index=True)
+    category = db.Column(db.String(50), nullable=False, index=True)
     secondary_muscles = db.Column(db.JSON, nullable=False, default=list)
     instructions = db.Column(db.JSON, nullable=False, default=list)
     image_url = db.Column(db.String(1000))
     source = db.Column(db.String(100), nullable=False, default="RepIT")
+    source_identifier = db.Column(db.String(180), nullable=False)
+    source_url = db.Column(db.String(1000))
+    license_name = db.Column(db.String(100))
+    license_url = db.Column(db.String(1000))
+    attribution_text = db.Column(db.String(500))
+    catalog_version = db.Column(db.String(30), nullable=False)
+    is_active = db.Column(db.Boolean, nullable=False, default=True, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
     workouts = db.relationship("Workout", secondary=workout_exercise, back_populates="exercises")
     session_exercises = db.relationship("SessionExercise", back_populates="exercise")
@@ -50,6 +82,10 @@ class Exercise(db.Model):
     @property
     def gifUrl(self):
         return self.image_url
+
+    @property
+    def has_attribution(self):
+        return bool(self.attribution_text or self.license_name)
 
 
 class Workout(db.Model):
