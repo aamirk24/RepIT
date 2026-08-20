@@ -2,9 +2,21 @@
 
 **A production-deployed strength training platform for planning routines, recording resilient workout sessions, and turning completed sets into useful progress analytics.**
 
-[Live demo](https://repit-inq2.onrender.com/) · [Product roadmap](ROADMAP.md) · [Deployment guide](docs/DEPLOYMENT.md) · [Security](docs/SECURITY.md)
+[Live demo](https://repit-inq2.onrender.com/) · [Deployment guide](docs/DEPLOYMENT.md) · [Security](docs/SECURITY.md)
 
 > RepIT runs on Render's free tier, so the first request after inactivity can take about a minute while the service wakes.
+
+## Product tour
+
+![RepIT landing page presenting the product and its training dashboard](docs/images/repit-landing.png)
+
+| Training dashboard | Exercise library |
+| --- | --- |
+| ![RepIT dashboard showing training statistics, workout history, and saved routines](docs/images/repit-dashboard.png) | ![RepIT exercise library with search, filters, and demonstration images](docs/images/repit-exercise-library.png) |
+
+| Live workout tracking | Progress analytics |
+| --- | --- |
+| ![RepIT active workout with exercise details and editable sets](docs/images/repit-workout-tracking.png) | ![RepIT progress dashboard with training consistency and exercise records](docs/images/repit-progress.png) |
 
 ## What RepIT does
 
@@ -131,8 +143,6 @@ Weights and measurements are stored canonically in kilograms and centimetres, th
 - The catalogue is updated through reviewed repository snapshots, not unreviewed runtime network calls.
 - Exercise images currently use commit-pinned upstream URLs rather than owned object storage.
 - RepIT is a personal, non-commercial portfolio project, not medical or professional training advice.
-
-The deferred roadmap and prerequisites are documented in [ROADMAP.md](ROADMAP.md).
 
 ## Privacy and responsible use
 
