@@ -1,13 +1,19 @@
 from pathlib import Path
+import re
 import secrets
+import time
+import uuid
 
-from flask import Flask, g
-from flask_login import LoginManager
+from flask import Flask, g, render_template, request
+from flask_login import LoginManager, current_user
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
+from sqlalchemy import text
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from .config import CONFIGS
+from .observability import configure_logging, configure_sentry, release_version
 
 
 db = SQLAlchemy()
@@ -34,6 +40,14 @@ def create_app(test_config=None, environment=None):
         app.config.update(config_class.validate(app.instance_path))
     if test_config:
         app.config.update(test_config)
+    app.config["APP_VERSION"] = release_version()
+
+    if app.config["PROXY_FIX_HOPS"]:
+        hops = app.config["PROXY_FIX_HOPS"]
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=hops, x_proto=hops, x_host=hops)
+
+    configure_logging(app)
+    configure_sentry(app)
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -47,6 +61,10 @@ def create_app(test_config=None, environment=None):
 
     app.register_blueprint(auth)
     app.register_blueprint(views)
+
+    from .deploy import register_deployment_commands
+
+    register_deployment_commands(app)
 
     from .models import User
 
@@ -74,14 +92,29 @@ def create_app(test_config=None, environment=None):
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "environment": app.config["APP_ENV"]}
+        return {"status": "ok", "version": app.config["APP_VERSION"]}
+
+    @app.get("/health/ready")
+    def readiness():
+        try:
+            db.session.execute(text("SELECT 1"))
+        except Exception:
+            db.session.rollback()
+            app.logger.warning("readiness_check_failed", extra={"event": "readiness_check_failed"})
+            return {"status": "unavailable"}, 503
+        return {"status": "ready", "version": app.config["APP_VERSION"]}
 
     @app.before_request
-    def create_csp_nonce():
+    def prepare_request_context():
         g.csp_nonce = secrets.token_urlsafe(18)
+        supplied_request_id = request.headers.get("X-Request-ID", "")
+        g.request_id = supplied_request_id if re.fullmatch(r"[A-Za-z0-9._-]{1,64}", supplied_request_id) else uuid.uuid4().hex
+        g.request_started_at = time.perf_counter()
 
     @app.after_request
     def add_security_headers(response):
+        request_id = getattr(g, "request_id", uuid.uuid4().hex)
+        response.headers["X-Request-ID"] = request_id
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         response.headers.setdefault("X-Frame-Options", "DENY")
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
@@ -92,6 +125,32 @@ def create_app(test_config=None, environment=None):
         )
         if app.config["APP_ENV"] == "production":
             response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+        if request.endpoint == "static":
+            response.headers["Cache-Control"] = "public, max-age=3600"
+        else:
+            response.headers.setdefault("Cache-Control", "no-store")
+        if request.endpoint not in {"static", "health", "readiness"}:
+            app.logger.info(
+                "request_completed",
+                extra={
+                    "event": "request_completed",
+                    "request_id": request_id,
+                    "method": request.method,
+                    "route": request.url_rule.rule if request.url_rule else "unmatched",
+                    "status": response.status_code,
+                    "duration_ms": round((time.perf_counter() - getattr(g, "request_started_at", time.perf_counter())) * 1000, 2),
+                },
+            )
         return response
+
+    @app.errorhandler(404)
+    def not_found(_error):
+        return render_template("error.html", user=current_user, status_code=404, title="Page not found", message="The page you requested does not exist."), 404
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        db.session.rollback()
+        app.logger.error("unhandled_application_error", exc_info=(type(error), error, error.__traceback__), extra={"event": "unhandled_application_error", "request_id": getattr(g, "request_id", None)})
+        return render_template("error.html", user=current_user, status_code=500, title="Something went wrong", message="The request could not be completed. Please try again."), 500
 
     return app

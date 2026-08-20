@@ -22,6 +22,7 @@ class RepITTestCase(unittest.TestCase):
                 "WTF_CSRF_ENABLED": False,
                 "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
                 "SECRET_KEY": "test-secret",
+                "LOG_LEVEL": "WARNING",
             }
         )
         self.client = self.app.test_client()
@@ -177,6 +178,57 @@ class RepITTestCase(unittest.TestCase):
         response = self.client.get("/health")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()["status"], "ok")
+
+    def test_readiness_request_ids_and_cache_policy(self):
+        response = self.client.get("/health/ready", headers={"X-Request-ID": "render-check-123"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["status"], "ready")
+        self.assertEqual(response.headers["X-Request-ID"], "render-check-123")
+        self.assertEqual(response.headers["Cache-Control"], "no-store")
+
+        response = self.client.get("/landing", headers={"X-Request-ID": "invalid request id"})
+        self.assertRegex(response.headers["X-Request-ID"], r"^[a-f0-9]{32}$")
+        self.assertEqual(response.headers["Cache-Control"], "no-store")
+
+    def test_public_legal_and_error_pages(self):
+        for path, text in (
+            ("/privacy", b"Privacy policy"),
+            ("/terms", b"Terms of use"),
+            ("/fitness-disclaimer", b"Fitness disclaimer"),
+        ):
+            response = self.client.get(path)
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(text, response.data)
+        response = self.client.get("/this-page-does-not-exist")
+        self.assertEqual(response.status_code, 404)
+        self.assertIn(b"Page not found", response.data)
+
+    def test_prepare_deploy_command_runs_migrations_and_catalogue_sync(self):
+        with patch("app.deploy.upgrade") as upgrade:
+            result = self.app.test_cli_runner().invoke(args=["prepare-deploy"])
+        self.assertEqual(result.exit_code, 0, result.output)
+        upgrade.assert_called_once_with()
+        self.assertIn("Deployment prepared", result.output)
+
+    def test_production_configuration_fails_closed(self):
+        with patch.dict(
+            os.environ,
+            {"SECRET_KEY": "short", "DATABASE_URL": "sqlite:///unsafe.db"},
+            clear=False,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "SECRET_KEY"):
+                create_app(environment="production")
+
+        with patch.dict(
+            os.environ,
+            {
+                "SECRET_KEY": "a" * 32,
+                "DATABASE_URL": "sqlite:///unsafe.db",
+            },
+            clear=False,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "PostgreSQL"):
+                create_app(environment="production")
 
     def test_postgres_urls_use_psycopg3(self):
         self.assertEqual(

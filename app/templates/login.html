@@ -6,5 +6,5 @@
     <div class="mb-3">{{ form.password.label(class="form-label") }}<div class="input-icon-wrap"><i class="bx bx-lock-alt"></i>{{ form.password(class="form-control", placeholder="Your password", autocomplete="current-password") }}</div>{% for error in form.password.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}</div>
     <div class="form-check mb-4">{{ form.remember(class="form-check-input") }} {{ form.remember.label(class="form-check-label small") }}</div>
     {{ form.submit(class="btn btn-brand w-100 py-2") }}
-</form><p class="text-center small text-muted mt-4 mb-0">New to RepIT? <a href="{{ url_for('auth.signup') }}">Create an account</a></p></div></div>
+</form><p class="text-center small text-muted mt-4 mb-2">New to RepIT? <a href="{{ url_for('auth.signup') }}">Create an account</a></p><p class="auth-legal text-center mb-0"><a href="{{ url_for('views.privacy') }}">Privacy</a><span aria-hidden="true">·</span><a href="{{ url_for('views.terms') }}">Terms</a><span aria-hidden="true">·</span><a href="{{ url_for('views.fitness_disclaimer') }}">Fitness disclaimer</a></p></div></div>
 {% endblock %}

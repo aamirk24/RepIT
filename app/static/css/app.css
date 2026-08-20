@@ -261,6 +261,24 @@ img { max-width: 100%; }
 .pagination .page-link { margin-inline: .15rem; color: var(--brand); border: 0; border-radius: .55rem; }
 .pagination .active > .page-link { background: var(--brand); }
 
+.auth-legal { color: var(--muted); font-size: .7rem; line-height: 1.65; }
+.auth-legal a { color: var(--muted); }
+.auth-legal span { margin: 0 .4rem; }
+.account-legal-links { display: flex; flex-wrap: wrap; gap: .55rem 1rem; margin-top: 1.25rem; font-size: .75rem; }
+.account-legal-links a { color: var(--muted); }
+.error-state { display: grid; min-height: min(68vh, 620px); place-content: center; padding: 3rem 1rem; text-align: center; }
+.error-code { color: var(--brand); font-family: Blatant, sans-serif; font-size: clamp(4.5rem, 15vw, 8rem); line-height: .8; }
+.legal-page { max-width: 1040px; margin: 0 auto; }
+.legal-date { color: var(--muted); font-size: .8rem; }
+.legal-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 2rem; margin-top: 2rem; }
+.legal-nav { align-self: start; display: grid; gap: .25rem; position: sticky; top: 96px; }
+.legal-nav a { padding: .65rem .75rem; color: var(--muted); border-radius: .6rem; font-size: .78rem; font-weight: 700; text-decoration: none; }
+.legal-nav a:hover, .legal-nav a.active { color: var(--brand); background: var(--accent-soft); }
+.legal-document { padding: clamp(1.25rem, 4vw, 2.25rem); }
+.legal-document section + section { margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--line); }
+.legal-document h2 { font-size: 1.25rem; }
+.legal-document p, .legal-document li { color: var(--muted); font-size: .92rem; line-height: 1.75; }
+
 @media (max-width: 991.98px) {
     .app-navbar .navbar-collapse { padding: 1rem 0; }
     .nav-actions { margin-top: .75rem; }
@@ -268,6 +286,8 @@ img { max-width: 100%; }
     .product-landing-photo { min-height: 360px; }
     .product-preview-body { grid-template-columns: 1fr; }
     .product-preview-routine .btn { margin-top: 1rem; }
+    .legal-layout { grid-template-columns: 1fr; }
+    .legal-nav { display: flex; flex-wrap: wrap; position: static; }
 }
 @media (max-width: 575.98px) {
     .app-shell { padding-top: 1.35rem; }

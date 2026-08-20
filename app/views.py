@@ -325,6 +325,21 @@ def faq():
     return render_template("faq.html", user=current_user)
 
 
+@views.route("/privacy")
+def privacy():
+    return render_template("legal.html", user=current_user, document="privacy")
+
+
+@views.route("/terms")
+def terms():
+    return render_template("legal.html", user=current_user, document="terms")
+
+
+@views.route("/fitness-disclaimer")
+def fitness_disclaimer():
+    return render_template("legal.html", user=current_user, document="disclaimer")
+
+
 @views.route("/progress")
 @login_required
 def progress():

@@ -2,7 +2,7 @@
 
 RepIT is a Flask fitness tracker for creating reusable routines, logging workout sessions and sets, browsing an exercise library, and charting body measurements.
 
-This repository is currently in **Stage 5 product UI development**. The original PythonAnywhere deployment and paid ExerciseDB integration are not active. RepIT uses a pinned public-domain snapshot of Free Exercise DB and makes no provider API requests at startup.
+This repository has completed **Stage 6 production and operations preparation**. The original PythonAnywhere deployment and paid ExerciseDB integration are not active. RepIT uses a pinned public-domain snapshot of Free Exercise DB and makes no provider API requests at startup.
 
 ## Local setup
 
@@ -41,11 +41,25 @@ DATABASE_URL=postgresql://user:password@host:5432/repit
 
 Never commit real environment values.
 
+## Production deployment
+
+RepIT includes a Render Blueprint, Gunicorn configuration, managed PostgreSQL readiness check, structured request logging, optional privacy-safe Sentry integration, and a deployment command that serialises migrations and catalogue synchronisation with a PostgreSQL advisory lock.
+
+The intended initial stack is a Render web service plus a Neon pooled PostgreSQL connection. No cloud resources are created by this repository. Follow [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) to provision and verify them manually. Operational response and recovery procedures live in [docs/OPERATIONS.md](docs/OPERATIONS.md) and [docs/BACKUP_AND_RECOVERY.md](docs/BACKUP_AND_RECOVERY.md).
+
+Production process command:
+
+```bash
+python -m flask --app main prepare-deploy && gunicorn -c gunicorn.conf.py main:app
+```
+
+The command upgrades the schema and synchronises the pinned catalogue before accepting traffic. It is safe to repeat.
+
 ## Account security
 
 RepIT uses CSRF protection, secure password hashing, generic login failures, persistent login throttling, explicit remember-me sessions, password-confirmed account deletion, and global session invalidation after a password change. Production responses add HTTPS-only cookies, HSTS, a content security policy, and defensive browser headers.
 
-See [ROADMAP.md](ROADMAP.md) for planned product stages and integrations intentionally deferred until their external prerequisites are chosen.
+See [ROADMAP.md](ROADMAP.md) for completed product stages and integrations intentionally deferred until their external prerequisites are chosen. Security reporting and retention details are in [docs/SECURITY.md](docs/SECURITY.md).
 
 ## Tests
 
@@ -88,4 +102,4 @@ See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for source and licence deta
 
 ## Health check
 
-`GET /health` returns a small status response suitable for local and future deployment health checks. It does not query external services.
+`GET /health` confirms that the application process is alive. `GET /health/ready` also verifies the database connection and is the production routing check. Both return the current release identifier and expose no secrets.

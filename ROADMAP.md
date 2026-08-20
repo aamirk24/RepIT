@@ -54,19 +54,21 @@ RepIT is being rebuilt in reviewable stages. Exercise metadata comes from a pinn
 - Kept analytics user-scoped and provider-independent through RepIT exercise IDs and historical snapshots.
 - Added analytics indexes and regression coverage for calculations, isolation, conversion, and filtering.
 
-## Planned
-
 ### Stage 5 — Product UI, accessibility, and responsive design
 
-- Cohesive design system and rebuilt navigation, dashboard, exercise browser, workout logger, and account screens.
-- Replace the legacy all-record exercise page with API-driven search, filtering, and pagination; keep media lazy-loaded and avoid generating multi-megabyte catalogue HTML.
-- Mobile-first behavior, keyboard navigation, reduced-motion support, semantic markup, and accessibility checks.
-- Improve the two-image exercise demonstrations and allow optional licensed looping media with fallbacks and attribution.
+- Added the Quiet Sage design system and rebuilt navigation, landing, dashboard, exercise browser, routines, workout logger, progress, history, and account screens.
+- Replaced the legacy all-record exercise page with paginated search and filtering while keeping media lazy-loaded.
+- Added responsive behavior, keyboard navigation, reduced-motion support, semantic markup, and accessible chart alternatives.
+- Added reliable two-frame exercise demonstrations throughout catalogue, routine, and workout experiences.
 
 ### Stage 6 — Deployment and operations
 
-- Managed PostgreSQL, production web server, reverse-proxy configuration, structured logging, error monitoring, backups, CI, and deployment checks.
-- Privacy policy, terms, fitness disclaimer, retention rules, and production runbooks.
+- Prepared Render and Neon deployment configuration, Gunicorn, bounded reverse-proxy trust, structured request logging, optional Sentry monitoring, and liveness/readiness checks.
+- Added concurrency-safe migrations and pinned catalogue preparation to the production startup path.
+- Added GitHub Actions tests, migration verification, compilation, and dependency vulnerability auditing before automatic deployment.
+- Added a privacy policy, terms, fitness disclaimer, explicit retention rules, and deployment, incident, backup, recovery, and security runbooks.
+
+## Planned
 
 ## Deferred integrations and explicit prerequisites
 

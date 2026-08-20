@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="container-xl app-shell"><section class="empty-state error-state"><span class="error-code">{{ status_code }}</span><h1 class="page-title">{{ title }}</h1><p class="page-copy mx-auto">{{ message }}</p><a class="btn btn-brand mt-3" href="{{ url_for('views.dashboard') if user.is_authenticated else url_for('views.landing') }}">Return home</a></section></div>
+{% endblock %}

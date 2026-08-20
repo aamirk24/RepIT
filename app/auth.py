@@ -1,5 +1,5 @@
 import hashlib
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from urllib.parse import urljoin, urlparse
 
 from flask import Blueprint, current_app, flash, redirect, render_template, request, session, url_for
@@ -65,6 +65,12 @@ def clear_login_throttle(email):
         db.session.commit()
 
 
+def prune_login_throttles():
+    cutoff = utcnow() - timedelta(days=30)
+    db.session.execute(db.delete(LoginThrottle).where(LoginThrottle.window_started_at < cutoff))
+    db.session.commit()
+
+
 def safe_next_url(target):
     if not target:
         return None
@@ -81,6 +87,7 @@ def login():
         return redirect(url_for("views.dashboard"))
     form = LogInForm()
     if form.validate_on_submit():
+        prune_login_throttles()
         email = form.email.data.strip().lower()
         if is_blocked(throttle_record(email)):
             flash("Too many login attempts. Please try again in 15 minutes.", "danger")
