@@ -21,7 +21,12 @@ def upgrade():
         batch_op.add_column(sa.Column("password_changed_at", sa.DateTime(timezone=True), nullable=True))
         batch_op.add_column(sa.Column("session_version", sa.Integer(), nullable=False, server_default="1"))
 
-    op.execute(sa.text("UPDATE user SET created_at = CURRENT_TIMESTAMP WHERE created_at IS NULL"))
+    user_table = sa.table("user", sa.column("created_at", sa.DateTime(timezone=True)))
+    op.execute(
+        sa.update(user_table)
+        .where(user_table.c.created_at.is_(None))
+        .values(created_at=sa.func.current_timestamp())
+    )
     with op.batch_alter_table("user") as batch_op:
         batch_op.alter_column("created_at", existing_type=sa.DateTime(timezone=True), nullable=False)
         batch_op.alter_column("session_version", server_default=None)
