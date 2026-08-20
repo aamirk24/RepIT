@@ -35,13 +35,16 @@ RepIT is being rebuilt in reviewable stages. Exercise metadata comes from a pinn
 - Password-confirmed account deletion.
 - Browser security headers and expanded security regression tests.
 
-## Planned
-
 ### Stage 3 — Workout experience and data integrity
 
-- Redesign active-workout state, set editing, timers, notes, ordering, and recovery from interrupted sessions.
-- Add transaction-safe service functions and database constraints for workout invariants.
-- Treat external exercises as normalized provider records; preserve historical workout facts when provider content changes or disappears.
+- Added recoverable active workouts with database-backed timers and one active session per user.
+- Added editable and removable sets, rest times, workout names and notes, and persistent exercise ordering.
+- Moved workout mutations into transaction-safe service functions with ownership and active-state enforcement.
+- Added database uniqueness, range, lifecycle, and ordering constraints.
+- Snapshotted exercise identity fields into workout history so provider catalogue changes cannot rewrite past sessions.
+- Made completed sessions immutable and prevented empty workouts from being completed.
+
+## Planned
 
 ### Stage 4 — Progress and analytics
 

@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from flask_login import UserMixin
+from sqlalchemy import text
 
 from . import db
 
@@ -114,12 +115,32 @@ class Workout(db.Model):
 
 
 class WorkoutSession(db.Model):
+    __table_args__ = (
+        db.CheckConstraint("end_time IS NULL OR end_time >= start_time", name="ck_workout_session_time_order"),
+        db.CheckConstraint("length(trim(name)) BETWEEN 1 AND 150", name="ck_workout_session_name_length"),
+        db.CheckConstraint("notes IS NULL OR length(notes) <= 2000", name="ck_workout_session_notes_length"),
+        db.Index(
+            "uq_workout_session_active_user",
+            "user_id",
+            unique=True,
+            sqlite_where=text("end_time IS NULL"),
+            postgresql_where=text("end_time IS NULL"),
+        ),
+    )
+
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     workout_id = db.Column(db.Integer, db.ForeignKey("workout.id", ondelete="SET NULL"))
     start_time = db.Column(db.DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     end_time = db.Column(db.DateTime(timezone=True))
-    notes = db.Column(db.String(200), nullable=False, default="Custom Workout")
+    name = db.Column(db.String(150), nullable=False, default="Custom Workout")
+    notes = db.Column(db.Text)
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
     user = db.relationship("User", back_populates="workout_sessions")
     workout = db.relationship("Workout", back_populates="workout_sessions")
@@ -129,12 +150,21 @@ class WorkoutSession(db.Model):
 
 
 class SessionExercise(db.Model):
+    __table_args__ = (
+        db.UniqueConstraint("workout_session_id", "exercise_id", name="uq_session_exercise_exercise"),
+        db.UniqueConstraint("workout_session_id", "order", name="uq_session_exercise_order"),
+        db.CheckConstraint('"order" >= 1', name="ck_session_exercise_order_positive"),
+    )
+
     id = db.Column(db.Integer, primary_key=True)
     workout_session_id = db.Column(
         db.Integer, db.ForeignKey("workout_session.id", ondelete="CASCADE"), nullable=False, index=True
     )
     exercise_id = db.Column(db.Integer, db.ForeignKey("exercise.id"), nullable=False)
     order = db.Column(db.Integer, nullable=False)
+    exercise_name = db.Column(db.String(150), nullable=False)
+    target_name = db.Column(db.String(150), nullable=False)
+    equipment_name = db.Column(db.String(100), nullable=False)
 
     workout_session = db.relationship("WorkoutSession", back_populates="session_exercises")
     exercise = db.relationship("Exercise", back_populates="session_exercises")
@@ -144,6 +174,14 @@ class SessionExercise(db.Model):
 
 
 class ExerciseSet(db.Model):
+    __table_args__ = (
+        db.UniqueConstraint("session_exercise_id", "set_number", name="uq_exercise_set_number"),
+        db.CheckConstraint("set_number >= 1", name="ck_exercise_set_number_positive"),
+        db.CheckConstraint("reps >= 1", name="ck_exercise_set_reps_positive"),
+        db.CheckConstraint("weight IS NULL OR weight >= 0", name="ck_exercise_set_weight_nonnegative"),
+        db.CheckConstraint("rest_time IS NULL OR rest_time >= 0", name="ck_exercise_set_rest_nonnegative"),
+    )
+
     id = db.Column(db.Integer, primary_key=True)
     session_exercise_id = db.Column(
         db.Integer, db.ForeignKey("session_exercise.id", ondelete="CASCADE"), nullable=False, index=True

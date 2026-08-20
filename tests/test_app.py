@@ -340,6 +340,125 @@ class RepITTestCase(unittest.TestCase):
             self.assertIsNotNone(session.end_time)
             self.assertEqual(db.session.scalar(db.select(db.func.count(ExerciseSet.id))), 1)
 
+    def test_active_workout_is_recovered_instead_of_duplicated(self):
+        self.signup()
+        first = self.client.post("/start_empty_workout", json={}).get_json()
+        second = self.client.post("/start_empty_workout", json={}).get_json()
+        self.assertTrue(first["created"])
+        self.assertFalse(second["created"])
+        self.assertEqual(first["session_id"], second["session_id"])
+        response = self.client.get("/tracking")
+        self.assertIn(f'"id": {first["session_id"]}'.encode(), response.data)
+        with self.app.app_context():
+            self.assertEqual(db.session.scalar(db.select(db.func.count(WorkoutSession.id))), 1)
+
+    def test_sets_are_updated_deleted_and_completed_sessions_are_immutable(self):
+        self.signup()
+        with self.app.app_context():
+            exercise_id = db.session.scalar(db.select(Exercise.id))
+        session_id = self.client.post("/start_empty_workout", json={}).get_json()["session_id"]
+        self.client.post(
+            "/add_session_exercise", json={"session_id": session_id, "exercise_id": exercise_id}
+        )
+        for reps in (8, 10):
+            response = self.client.post(
+                "/add_exercise_set",
+                json={
+                    "session_id": session_id,
+                    "exercise_id": exercise_id,
+                    "set_number": 1,
+                    "reps": reps,
+                    "weight": 50,
+                    "rest_time": 90,
+                },
+            )
+            self.assertEqual(response.status_code, 200)
+        with self.app.app_context():
+            self.assertEqual(db.session.scalar(db.select(db.func.count(ExerciseSet.id))), 1)
+            self.assertEqual(db.session.scalar(db.select(ExerciseSet.reps)), 10)
+
+        response = self.client.post(
+            "/end_workout_session",
+            json={"session_id": session_id, "workout_name": "Upper Body", "notes": "Strong session"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            self.client.post(
+                "/add_exercise_set",
+                json={"session_id": session_id, "exercise_id": exercise_id, "set_number": 2, "reps": 5},
+            ).status_code,
+            404,
+        )
+        with self.app.app_context():
+            session = db.session.get(WorkoutSession, session_id)
+            self.assertEqual(session.name, "Upper Body")
+            self.assertEqual(session.notes, "Strong session")
+
+    def test_active_workout_supports_notes_ordering_and_set_deletion(self):
+        self.signup()
+        with self.app.app_context():
+            exercise_ids = list(db.session.scalars(db.select(Exercise.id).limit(2)))
+        session_id = self.client.post("/start_empty_workout", json={}).get_json()["session_id"]
+        for exercise_id in exercise_ids:
+            self.assertEqual(
+                self.client.post(
+                    "/add_session_exercise", json={"session_id": session_id, "exercise_id": exercise_id}
+                ).status_code,
+                200,
+            )
+        response = self.client.post(
+            "/reorder_session_exercises",
+            json={"session_id": session_id, "exercise_ids": list(reversed(exercise_ids))},
+        )
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(
+            "/update_workout_session",
+            json={"session_id": session_id, "name": "Evening training", "notes": "Felt recovered"},
+        )
+        self.assertEqual(response.status_code, 200)
+        for set_number in (1, 2):
+            self.client.post(
+                "/add_exercise_set",
+                json={
+                    "session_id": session_id,
+                    "exercise_id": exercise_ids[0],
+                    "set_number": set_number,
+                    "reps": 12,
+                },
+            )
+        self.assertEqual(
+            self.client.post(
+                "/delete_exercise_set",
+                json={"session_id": session_id, "exercise_id": exercise_ids[0], "set_number": 1},
+            ).status_code,
+            200,
+        )
+        with self.app.app_context():
+            session = db.session.get(WorkoutSession, session_id)
+            self.assertEqual([item.exercise_id for item in session.session_exercises], list(reversed(exercise_ids)))
+            self.assertEqual(session.name, "Evening training")
+            self.assertEqual(session.notes, "Felt recovered")
+            remaining_set = db.session.scalar(db.select(ExerciseSet))
+            self.assertEqual(remaining_set.set_number, 1)
+
+        self.assertEqual(
+            self.client.post(
+                "/remove_session_exercise",
+                json={"session_id": session_id, "exercise_id": exercise_ids[1]},
+            ).status_code,
+            200,
+        )
+        with self.app.app_context():
+            session = db.session.get(WorkoutSession, session_id)
+            self.assertEqual([item.order for item in session.session_exercises], [1])
+
+    def test_empty_workout_cannot_be_completed(self):
+        self.signup()
+        session_id = self.client.post("/start_empty_workout", json={}).get_json()["session_id"]
+        response = self.client.post("/end_workout_session", json={"session_id": session_id})
+        self.assertEqual(response.status_code, 409)
+        self.assertIn(b"at least one completed set", response.data)
+
     def test_user_cannot_modify_another_users_session(self):
         self.signup("owner@example.com", "owner")
         response = self.client.post("/start_empty_workout", json={})

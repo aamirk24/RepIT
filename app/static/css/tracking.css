@@ -36,6 +36,14 @@ img {
     object-fit: contain;
 }
 
+.workout-exercise-card .exercise-summary img {
+    flex: 0 0 auto;
+}
+
+.set-row input {
+    min-width: 0;
+}
+
 .font-small {
     font-size: 14px;
 }

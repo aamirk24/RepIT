@@ -7,7 +7,21 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from . import db
 from .forms import ChangePasswordForm, DeleteAccountForm, HeightForm, UpdateForm, WeightForm, WorkoutForm
-from .models import Exercise, ExerciseSet, Height, SessionExercise, User, Weight, Workout, WorkoutSession
+from .models import Exercise, Height, User, Weight, Workout, WorkoutSession
+from .workouts import (
+    WorkoutError,
+    active_session_for,
+    add_exercise,
+    complete_workout,
+    delete_set as delete_workout_set,
+    owned_session,
+    remove_exercise,
+    reorder_exercises,
+    save_set,
+    session_payload,
+    start_workout,
+    update_workout,
+)
 
 
 views = Blueprint("views", __name__)
@@ -20,16 +34,9 @@ def json_payload():
     return data
 
 
-def owned_session(session_id):
-    session = db.session.scalar(
-        db.select(WorkoutSession).where(
-            WorkoutSession.id == session_id,
-            WorkoutSession.user_id == current_user.id,
-        )
-    )
-    if session is None:
-        abort(404)
-    return session
+@views.errorhandler(WorkoutError)
+def handle_workout_error(error):
+    return jsonify(success=False, error=str(error)), error.status_code
 
 
 @views.route("/landing")
@@ -45,12 +52,18 @@ def dashboard():
     ).all()
     sessions = db.session.scalars(
         db.select(WorkoutSession)
-        .where(WorkoutSession.user_id == current_user.id)
+        .where(WorkoutSession.user_id == current_user.id, WorkoutSession.end_time.is_not(None))
         .order_by(WorkoutSession.start_time.desc())
     ).all()
     for session in sessions:
         session.total_sets = sum(len(item.sets) for item in session.session_exercises)
-    return render_template("dashboard.html", user=current_user, workouts=workouts, recent_sessions=sessions)
+    return render_template(
+        "dashboard.html",
+        user=current_user,
+        workouts=workouts,
+        recent_sessions=sessions,
+        active_session=active_session_for(current_user.id),
+    )
 
 
 @views.route("/exercise")
@@ -183,22 +196,17 @@ def tracking():
     exercises = db.session.scalars(
         db.select(Exercise).where(Exercise.is_active.is_(True)).order_by(Exercise.name)
     ).all()
-    recent_sessions = db.session.scalars(
-        db.select(WorkoutSession)
-        .where(WorkoutSession.user_id == current_user.id)
-        .order_by(WorkoutSession.start_time.desc())
-        .limit(10)
-    ).all()
     routine_id = request.args.get("routine_id", type=int)
     if routine_id and not any(item.id == routine_id for item in workouts):
         abort(404)
+    active_session = active_session_for(current_user.id)
     return render_template(
         "tracking.html",
         user=current_user,
         workouts=workouts,
         exercises=exercises,
-        recent_sessions=recent_sessions,
         requested_routine_id=routine_id,
+        active_session_payload=session_payload(active_session) if active_session else None,
     )
 
 
@@ -206,33 +214,14 @@ def tracking():
 @login_required
 def start_empty_workout():
     data = request.get_json(silent=True) or {}
-    routine_id = data.get("workout_id")
-    routine = None
-    if routine_id:
-        routine = db.session.scalar(
-            db.select(Workout).where(Workout.id == routine_id, Workout.creator_id == current_user.id)
-        )
-        if routine is None:
-            abort(404)
-    session = WorkoutSession(
-        user=current_user,
-        workout=routine,
-        notes=routine.name if routine else "Custom Workout",
-    )
-    db.session.add(session)
-    db.session.flush()
-    if routine:
-        for order, exercise in enumerate(routine.exercises, start=1):
-            session.session_exercises.append(SessionExercise(exercise=exercise, order=order))
-    db.session.commit()
+    result = start_workout(current_user, data.get("workout_id"))
+    payload = session_payload(result.session)
     return jsonify(
         success=True,
-        session_id=session.id,
-        workout_name=session.notes,
-        exercises=[
-            {"id": item.exercise.id, "name": item.exercise.name, "target": item.exercise.target, "gifUrl": item.exercise.image_url}
-            for item in session.session_exercises
-        ],
+        created=result.created,
+        session=payload,
+        session_id=result.session.id,
+        exercises=payload["exercises"],
     )
 
 
@@ -240,83 +229,76 @@ def start_empty_workout():
 @login_required
 def add_session_exercise():
     data = json_payload()
-    session = owned_session(data.get("session_id"))
-    exercise = db.session.get(Exercise, data.get("exercise_id"))
-    if exercise is None or any(item.exercise_id == exercise.id for item in session.session_exercises):
-        abort(400)
-    item = SessionExercise(workout_session=session, exercise=exercise, order=len(session.session_exercises) + 1)
-    db.session.add(item)
-    db.session.commit()
-    return jsonify(success=True, message="Exercise added to session.")
+    session = owned_session(current_user.id, data.get("session_id"), active_only=True)
+    item = add_exercise(session, data.get("exercise_id"))
+    return jsonify(success=True, exercise=session_payload(session)["exercises"][-1], session_exercise_id=item.id)
 
 
 @views.route("/remove_session_exercise", methods=["POST"])
 @login_required
 def remove_session_exercise():
     data = json_payload()
-    session = owned_session(data.get("session_id"))
-    item = db.session.scalar(
-        db.select(SessionExercise).where(
-            SessionExercise.workout_session_id == session.id,
-            SessionExercise.exercise_id == data.get("exercise_id"),
-        )
-    )
-    if item is None:
-        abort(404)
-    db.session.delete(item)
-    db.session.commit()
+    session = owned_session(current_user.id, data.get("session_id"), active_only=True)
+    remove_exercise(session, data.get("exercise_id"))
     return jsonify(success=True, message="Exercise removed from session.")
+
+
+@views.route("/reorder_session_exercises", methods=["POST"])
+@login_required
+def reorder_session_exercises():
+    data = json_payload()
+    session = owned_session(current_user.id, data.get("session_id"), active_only=True)
+    reorder_exercises(session, data.get("exercise_ids"))
+    return jsonify(success=True)
 
 
 @views.route("/add_exercise_set", methods=["POST"])
 @login_required
 def add_exercise_set():
     data = json_payload()
-    session = owned_session(data.get("session_id"))
-    item = db.session.scalar(
-        db.select(SessionExercise).where(
-            SessionExercise.workout_session_id == session.id,
-            SessionExercise.exercise_id == data.get("exercise_id"),
-        )
+    session = owned_session(current_user.id, data.get("session_id"), active_only=True)
+    record = save_set(
+        session,
+        data.get("exercise_id"),
+        data.get("set_number"),
+        data.get("reps"),
+        data.get("weight"),
+        data.get("rest_time"),
     )
-    if item is None:
-        abort(404)
-    try:
-        reps = int(data.get("reps"))
-        set_number = int(data.get("set_number"))
-        weight = float(data["weight"]) if data.get("weight") not in (None, "") else None
-    except (TypeError, ValueError):
-        abort(400)
-    if reps < 1 or set_number < 1 or (weight is not None and weight < 0):
-        abort(400)
-    exercise_set = ExerciseSet(
-        session_exercise=item,
-        set_number=set_number,
-        reps=reps,
-        weight=weight,
-        rest_time=data.get("rest_time"),
-        is_completed=True,
-    )
-    db.session.add(exercise_set)
-    db.session.commit()
-    return jsonify(success=True, message="Set saved.")
+    return jsonify(success=True, set_id=record.id, message="Set saved.")
+
+
+@views.route("/delete_exercise_set", methods=["POST"])
+@login_required
+def delete_exercise_set():
+    data = json_payload()
+    session = owned_session(current_user.id, data.get("session_id"), active_only=True)
+    delete_workout_set(session, data.get("exercise_id"), data.get("set_number"))
+    return jsonify(success=True)
+
+
+@views.route("/update_workout_session", methods=["POST"])
+@login_required
+def update_workout_session():
+    data = json_payload()
+    session = owned_session(current_user.id, data.get("session_id"), active_only=True)
+    update_workout(session, data.get("name"), data.get("notes"))
+    return jsonify(success=True)
 
 
 @views.route("/end_workout_session", methods=["POST"])
 @login_required
 def end_workout_session():
     data = json_payload()
-    session = owned_session(data.get("session_id"))
-    session.notes = (data.get("workout_name") or session.notes or "Custom Workout").strip()[:200]
-    session.end_time = datetime.now(timezone.utc)
-    db.session.commit()
+    session = owned_session(current_user.id, data.get("session_id"), active_only=True)
+    complete_workout(session, data.get("workout_name"), data.get("notes"))
     return jsonify(success=True, status="success", message="Workout saved.")
 
 
 @views.route("/discard_workout_session", methods=["POST"])
 @login_required
 def discard_workout_session():
-    session = owned_session(json_payload().get("session_id"))
+    session = owned_session(current_user.id, json_payload().get("session_id"), active_only=True)
     db.session.delete(session)
     db.session.commit()
     return jsonify(success=True)
@@ -325,7 +307,7 @@ def discard_workout_session():
 @views.route("/delete_session", methods=["POST"])
 @login_required
 def delete_session():
-    session = owned_session(json_payload().get("sessionId"))
+    session = owned_session(current_user.id, json_payload().get("sessionId"))
     db.session.delete(session)
     db.session.commit()
     return jsonify(success=True)
