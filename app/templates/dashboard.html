@@ -1,24 +1,155 @@
 {% extends "base.html" %}
 {% block title %}Overview{% endblock %}
 {% block content %}
-<div class="container-xl app-shell">
-    <header class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3 mb-4"><div><p class="page-kicker">Training overview</p><h1 class="page-title">Welcome Back, {{ user.first_name|title }}.</h1><p class="page-copy mb-0">Your recent work, next session, and thirty-day momentum in one place.</p></div><div class="d-flex gap-2"><a class="btn btn-outline-brand" href="{{ url_for('views.create_workout') }}">New routine</a><a class="btn btn-brand" href="{{ url_for('views.tracking') }}"><i class="bx bx-play me-1"></i>Start workout</a></div></header>
+    <div class="container-xl app-shell">
+        <header class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3 mb-4">
+            <div>
+                <p class="page-kicker">Training overview</p>
+                <h1 class="page-title">Welcome Back, {{ user.first_name|title }}.</h1>
+                <p class="page-copy mb-0">Your recent work, next session, and thirty-day momentum in one place.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a class="btn btn-outline-brand" href="{{ url_for('views.create_workout') }}">New routine</a>
+                <a class="btn btn-brand" href="{{ url_for('views.tracking') }}">
+                    <i class="bx bx-play me-1"></i>Start workout
+                </a>
+            </div>
+        </header>
 
-    {% if active_session %}<section class="resume-card mb-4"><div><span class="pill mb-2"><span class="live-dot"></span>In progress</span><h2 class="h3 mb-1">{{ active_session.name }}</h2><p class="mb-0">Started {{ active_session.start_time.strftime('%d %b at %H:%M') }} · {{ active_session.session_exercises|length }} exercises</p></div><a class="btn btn-light" href="{{ url_for('views.tracking') }}">Resume workout <i class="bx bx-right-arrow-alt"></i></a></section>{% endif %}
+        {% if active_session %}
+            <section class="resume-card mb-4">
+                <div>
+                    <span class="pill mb-2"><span class="live-dot"></span>In progress</span>
+                    <h2 class="h3 mb-1">{{ active_session.name }}</h2>
+                    <p class="mb-0">
+                        Started {{ active_session.start_time.strftime("%d %b at %H:%M") }} · {{ active_session.session_exercises|length }} exercises
+                    </p>
+                </div>
+                <a class="btn btn-light" href="{{ url_for('views.tracking') }}">
+                    Resume workout <i class="bx bx-right-arrow-alt"></i>
+                </a>
+            </section>
+        {% endif %}
 
-    <section class="row g-3 mb-4" aria-label="Last 30 days">
-        {% for icon, label, value in [('bx-calendar-check','Workouts',summary.workouts),('bx-check-double','Completed sets',summary.sets),('bx-dumbbell','Training volume',summary.volume|string ~ ' ' ~ weight_unit),('bx-time-five','Training time',summary.durationHours|string ~ ' hr')] %}
-        <div class="col-6 col-lg-3"><article class="card metric-card"><i class="bx {{ icon }} metric-icon"></i><p class="metric-label mb-0">{{ label }} · 30 days</p><p class="metric-value">{{ value }}</p></article></div>{% endfor %}
-    </section>
+        <section class="row g-3 mb-4" aria-label="Last 30 days">
+            {% for icon, label, value in [
+                ('bx-calendar-check', 'Workouts', summary.workouts),
+                ('bx-check-double', 'Completed sets', summary.sets),
+                ('bx-dumbbell', 'Training volume', summary.volume|string ~ ' ' ~ weight_unit),
+                ('bx-time-five', 'Training time', summary.durationHours|string ~ ' hr')
+            ] %}
+                <div class="col-6 col-lg-3">
+                    <article class="card metric-card">
+                        <i class="bx {{ icon }} metric-icon"></i>
+                        <p class="metric-label mb-0">{{ label }} · 30 days</p>
+                        <p class="metric-value">{{ value }}</p>
+                    </article>
+                </div>
+            {% endfor %}
+        </section>
 
-    <div class="row g-4"><section class="col-lg-8" aria-labelledby="history-heading"><div class="d-flex justify-content-between align-items-center mb-3"><div><p class="page-kicker mb-1">Recent activity</p><h2 id="history-heading" class="section-title mb-0">Workout history</h2></div><a class="small text-decoration-none" href="{{ url_for('views.progress') }}">View progress <i class="bx bx-right-arrow-alt"></i></a></div>
-        {% if recent_sessions %}<div class="app-card history-list">{% for session in recent_sessions[:8] %}<article class="history-item"><a class="history-link text-decoration-none text-reset" href="{{ url_for('views.workout_history_detail', session_id=session.id) }}"><time datetime="{{ session.start_time.date().isoformat() }}" class="history-date"><strong>{{ session.start_time.strftime('%d') }}</strong><small>{{ session.start_time.strftime('%b') }}</small></time><span class="history-copy"><strong>{{ session.name }}</strong><small>{{ session.session_exercises|length }} exercises · {{ session.total_sets }} sets · {{ session.duration_minutes }} min</small></span><span class="history-reps d-none d-md-block"><strong>{{ session.total_reps }}</strong><small>reps</small></span><i class="bx bx-chevron-right history-arrow"></i></a><button type="button" class="history-delete" data-delete-session-id="{{ session.id }}" aria-label="Delete {{ session.name }}"><i class="bx bx-trash"></i></button></article>{% endfor %}</div>
-        {% else %}<div class="app-card empty-state"><span class="empty-icon"><i class="bx bx-barbell"></i></span><h3 class="h4">Your history starts here</h3><p class="text-muted">Complete your first workout to begin tracking progress.</p><a class="btn btn-brand" href="{{ url_for('views.tracking') }}">Start a workout</a></div>{% endif %}
-    </section>
+        <div class="row g-4">
+            <section class="col-lg-8" aria-labelledby="history-heading">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <p class="page-kicker mb-1">Recent activity</p>
+                        <h2 id="history-heading" class="section-title mb-0">Workout history</h2>
+                    </div>
+                    <a class="small text-decoration-none" href="{{ url_for('views.progress') }}">
+                        View progress <i class="bx bx-right-arrow-alt"></i>
+                    </a>
+                </div>
 
-    <aside class="col-lg-4" aria-labelledby="routines-heading"><div class="d-flex justify-content-between align-items-center mb-3"><div><p class="page-kicker mb-1">Ready when you are</p><h2 id="routines-heading" class="section-title mb-0">My routines</h2></div><a class="btn btn-sm btn-outline-brand" href="{{ url_for('views.create_workout') }}"><i class="bx bx-plus"></i></a></div>
-        {% if workouts %}<div class="d-grid gap-2">{% for workout in workouts[:6] %}<article class="card routine-row"><div class="d-flex justify-content-between gap-2"><a class="text-decoration-none text-reset" href="{{ url_for('views.edit_workout', workout_id=workout.id) }}"><h3 class="h6 mb-1">{{ workout.name }}</h3><p class="small text-muted mb-2">{{ workout.exercises|length }} exercises</p></a><a class="btn btn-sm btn-quiet align-self-start" href="{{ url_for('views.edit_workout', workout_id=workout.id) }}" aria-label="View and edit {{ workout.name }}"><i class="bx bx-edit-alt"></i></a></div><div class="routine-thumbs">{% for exercise in workout.exercises[:3] %}{% if exercise.image_url %}<img src="{{ exercise.image_url }}" alt="" loading="lazy">{% endif %}{% endfor %}</div><a class="btn btn-brand btn-sm w-100 mt-3" href="{{ url_for('views.tracking', routine_id=workout.id) }}">Start routine</a></article>{% endfor %}</div>
-        {% else %}<div class="app-card empty-state py-4"><span class="empty-icon"><i class="bx bx-list-plus"></i></span><h3 class="h5">No routines yet</h3><p class="small text-muted">Save your go-to training plans.</p><a class="btn btn-outline-brand btn-sm" href="{{ url_for('views.create_workout') }}">Build a routine</a></div>{% endif %}
-    </aside></div>
-</div>
+                {% if recent_sessions %}
+                    <div class="app-card history-list">
+                        {% for session in recent_sessions[:8] %}
+                            <article class="history-item">
+                                <a class="history-link text-decoration-none text-reset"
+                                   href="{{ url_for('views.workout_history_detail', session_id=session.id) }}">
+                                    <time datetime="{{ session.start_time.date().isoformat() }}" class="history-date">
+                                        <strong>{{ session.start_time.strftime("%d") }}</strong>
+                                        <small>{{ session.start_time.strftime("%b") }}</small>
+                                    </time>
+                                    <span class="history-copy">
+                                        <strong>{{ session.name }}</strong>
+                                        <small>{{ session.session_exercises|length }} exercises · {{ session.total_sets }} sets · {{ session.duration_minutes }} min</small>
+                                    </span>
+                                    <span class="history-reps d-none d-md-block">
+                                        <strong>{{ session.total_reps }}</strong>
+                                        <small>reps</small>
+                                    </span>
+                                    <i class="bx bx-chevron-right history-arrow"></i>
+                                </a>
+                                <button type="button"
+                                        class="history-delete"
+                                        data-delete-session-id="{{ session.id }}"
+                                        aria-label="Delete {{ session.name }}">
+                                    <i class="bx bx-trash"></i>
+                                </button>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="app-card empty-state">
+                        <span class="empty-icon"><i class="bx bx-barbell"></i></span>
+                        <h3 class="h4">Your history starts here</h3>
+                        <p class="text-muted">Complete your first workout to begin tracking progress.</p>
+                        <a class="btn btn-brand" href="{{ url_for('views.tracking') }}">Start a workout</a>
+                    </div>
+                {% endif %}
+            </section>
+
+            <aside class="col-lg-4" aria-labelledby="routines-heading">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <p class="page-kicker mb-1">Ready when you are</p>
+                        <h2 id="routines-heading" class="section-title mb-0">My routines</h2>
+                    </div>
+                    <a class="btn btn-sm btn-outline-brand"
+                       href="{{ url_for('views.create_workout') }}"
+                       aria-label="Create a routine">
+                        <i class="bx bx-plus"></i>
+                    </a>
+                </div>
+
+                {% if workouts %}
+                    <div class="d-grid gap-2">
+                        {% for workout in workouts[:6] %}
+                            <article class="card routine-row">
+                                <div class="d-flex justify-content-between gap-2">
+                                    <a class="text-decoration-none text-reset"
+                                       href="{{ url_for('views.edit_workout', workout_id=workout.id) }}">
+                                        <h3 class="h6 mb-1">{{ workout.name }}</h3>
+                                        <p class="small text-muted mb-2">{{ workout.exercises|length }} exercises</p>
+                                    </a>
+                                    <a class="btn btn-sm btn-quiet align-self-start"
+                                       href="{{ url_for('views.edit_workout', workout_id=workout.id) }}"
+                                       aria-label="View and edit {{ workout.name }}">
+                                        <i class="bx bx-edit-alt"></i>
+                                    </a>
+                                </div>
+                                <div class="routine-thumbs">
+                                    {% for exercise in workout.exercises[:3] %}
+                                        {% if exercise.image_url %}
+                                            <img src="{{ exercise.image_url }}" alt="" loading="lazy">
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <a class="btn btn-brand btn-sm w-100 mt-3"
+                                   href="{{ url_for('views.tracking', routine_id=workout.id) }}">Start routine</a>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="app-card empty-state py-4">
+                        <span class="empty-icon"><i class="bx bx-list-plus"></i></span>
+                        <h3 class="h5">No routines yet</h3>
+                        <p class="small text-muted">Save your go-to training plans.</p>
+                        <a class="btn btn-outline-brand btn-sm"
+                           href="{{ url_for('views.create_workout') }}">Build a routine</a>
+                    </div>
+                {% endif %}
+            </aside>
+        </div>
+    </div>
 {% endblock %}

@@ -2,66 +2,111 @@
 {% block title %}Train with intent{% endblock %}
 {% block body_class %}landing-page{% endblock %}
 {% block content %}
-<section class="product-landing-hero">
-    <div class="container-xl">
-        <div class="row align-items-center g-4 g-xl-5">
-            <div class="col-lg-6">
-                <p class="page-kicker">Fitness tracking, made useful</p>
-                <h1 class="product-landing-title">Your training tells a story. <span>RepIT makes it visible.</span></h1>
-                <p class="product-landing-lead">Plan sessions, stay focused while you train, and turn every completed set into progress you can understand.</p>
-                <div class="d-flex flex-wrap align-items-center gap-2 mt-4">
-                    <a class="btn btn-brand btn-lg px-4" href="{{ url_for('auth.signup') }}">Create your free account</a>
-                    <a class="btn btn-quiet btn-lg" href="#how-it-works">See how it works</a>
-                </div>
-                <p class="landing-fine-print mt-3 mb-0"><i class="bx bx-check-circle me-1"></i>No card required · Your data stays yours</p>
-            </div>
-            <div class="col-lg-6">
-                <div class="product-landing-photo">
-                    <img src="{{ url_for('static', filename='background.jpg') }}" alt="Athlete training in a gym">
-                    <div class="product-photo-caption"><strong>Built around real training</strong><span>Plan · Log · Progress</span></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="product-preview" aria-label="Preview of the RepIT training dashboard">
-            <div class="product-preview-bar"><span></span><span></span><span></span><strong>RepIT overview</strong></div>
-            <div class="product-preview-body">
-                <div class="product-preview-main">
-                    <p class="page-kicker mb-1">Training overview</p>
-                    <h2>Welcome back, Aamir.</h2>
-                    <div class="product-preview-metrics">
-                        <div><span>Workouts</span><strong>12</strong></div>
-                        <div><span>Completed sets</span><strong>148</strong></div>
-                        <div><span>Training volume</span><strong>42.8k kg</strong></div>
+    <section class="product-landing-hero">
+        <div class="container-xl">
+            <div class="row align-items-center g-4 g-xl-5">
+                <div class="col-lg-6">
+                    <p class="page-kicker">Fitness tracking, made useful</p>
+                    <h1 class="product-landing-title">
+                        Your training tells a story. <span>RepIT makes it visible.</span>
+                    </h1>
+                    <p class="product-landing-lead">
+                        Plan sessions, stay focused while you train, and turn every completed set into progress you can understand.
+                    </p>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mt-4">
+                        <a class="btn btn-brand btn-lg px-4" href="{{ url_for('auth.signup') }}">Create your free account</a>
+                        <a class="btn btn-quiet btn-lg" href="#how-it-works">See how it works</a>
                     </div>
-                    <div class="product-preview-history">
-                        <div><span><strong>Chest &amp; triceps</strong><small>4 exercises · 12 sets</small></span><time>20 Aug</time></div>
-                        <div><span><strong>Lower body</strong><small>5 exercises · 16 sets</small></span><time>18 Aug</time></div>
-                        <div><span><strong>Back &amp; biceps</strong><small>6 exercises · 18 sets</small></span><time>16 Aug</time></div>
+                    <p class="landing-fine-print mt-3 mb-0">
+                        <i class="bx bx-check-circle me-1"></i>No card required · Your data stays yours
+                    </p>
+                </div>
+                <div class="col-lg-6">
+                    <div class="product-landing-photo">
+                        <img src="{{ url_for('static', filename='background.jpg') }}"
+                             alt="Athlete training in a gym">
+                        <div class="product-photo-caption">
+                            <strong>Built around real training</strong><span>Plan · Log · Progress</span>
+                        </div>
                     </div>
                 </div>
-                <aside class="product-preview-routine">
-                    <p class="page-kicker mb-1">Next routine</p><h3>Push day</h3><p>6 exercises · about 50 minutes</p><span class="btn btn-brand w-100">Start workout</span>
-                </aside>
+            </div>
+            <div class="product-preview"
+                 aria-label="Preview of the RepIT training dashboard">
+                <div class="product-preview-bar">
+                    <span></span><span></span><span></span><strong>RepIT overview</strong>
+                </div>
+                <div class="product-preview-body">
+                    <div class="product-preview-main">
+                        <p class="page-kicker mb-1">Training overview</p>
+                        <h2>Welcome back, Aamir.</h2>
+                        <div class="product-preview-metrics">
+                            <div>
+                                <span>Workouts</span><strong>12</strong>
+                            </div>
+                            <div>
+                                <span>Completed sets</span><strong>148</strong>
+                            </div>
+                            <div>
+                                <span>Training volume</span><strong>42.8k kg</strong>
+                            </div>
+                        </div>
+                        <div class="product-preview-history">
+                            <div>
+                                <span><strong>Chest &amp; triceps</strong><small>4 exercises · 12 sets</small></span><time>20 Aug</time>
+                            </div>
+                            <div>
+                                <span><strong>Lower body</strong><small>5 exercises · 16 sets</small></span><time>18 Aug</time>
+                            </div>
+                            <div>
+                                <span><strong>Back &amp; biceps</strong><small>6 exercises · 18 sets</small></span><time>16 Aug</time>
+                            </div>
+                        </div>
+                    </div>
+                    <aside class="product-preview-routine">
+                        <p class="page-kicker mb-1">Next routine</p>
+                        <h3>Push day</h3>
+                        <p>6 exercises · about 50 minutes</p>
+                        <span class="btn btn-brand w-100">Start workout</span>
+                    </aside>
+                </div>
             </div>
         </div>
-    </div>
-</section>
-
-<section id="how-it-works" class="product-landing-section">
-    <div class="container-xl">
-        <div class="row align-items-end g-4 mb-4"><div class="col-lg-7"><p class="page-kicker">One connected workflow</p><h2 class="product-section-title">Everything important stays together.</h2></div><div class="col-lg-5"><p class="page-copy mb-0">RepIT connects planning, workout logging, and progress analysis without adding social feeds, subscriptions, or unnecessary noise.</p></div></div>
-        <div class="product-steps">
-            {% for number, title, copy in [
-                ('01','Plan once','Build reusable routines from a catalogue of 873 movements.'),
-                ('02','Train without friction','Log sets, repetitions, load, rest periods, and notes in one resilient session.'),
-                ('03','See what changed','Review workout history, consistency, volume, personal records, and movement trends.')
-            ] %}
-            <article><span>{{ number }}</span><h3>{{ title }}</h3><p>{{ copy }}</p></article>
-            {% endfor %}
+    </section>
+    <section id="how-it-works" class="product-landing-section">
+        <div class="container-xl">
+            <div class="row align-items-end g-4 mb-4">
+                <div class="col-lg-7">
+                    <p class="page-kicker">One connected workflow</p>
+                    <h2 class="product-section-title">Everything important stays together.</h2>
+                </div>
+                <div class="col-lg-5">
+                    <p class="page-copy mb-0">
+                        RepIT connects planning, workout logging, and progress analysis without adding social feeds, subscriptions, or unnecessary noise.
+                    </p>
+                </div>
+            </div>
+            <div class="product-steps">
+                {% for number, title, copy in [
+                    ('01','Plan once','Build reusable routines from a catalogue of 873 movements.'),
+                    ('02','Train without friction','Log sets, repetitions, load, rest periods, and notes in one resilient session.'),
+                    ('03','See what changed','Review workout history, consistency, volume, personal records, and movement trends.')
+                    ] %}
+                    <article><span>{{ number }}</span>
+                        <h3>{{ title }}</h3>
+                        <p>{{ copy }}</p>
+                    </article>
+                {% endfor %}
+            </div>
         </div>
-    </div>
-</section>
-
-<section class="product-landing-cta"><div class="container-xl"><div><p class="page-kicker mb-2">Start where you are</p><h2>Make your next workout count.</h2></div><a class="btn btn-light btn-lg" href="{{ url_for('auth.signup') }}">Create account</a></div></section>
+    </section>
+    <section class="product-landing-cta">
+        <div class="container-xl">
+            <div>
+                <p class="page-kicker mb-2">Start where you are</p>
+                <h2>Make your next workout count.</h2>
+            </div>
+            <a class="btn btn-light btn-lg" href="{{ url_for('auth.signup') }}">Create account</a>
+        </div>
+    </section>
 {% endblock %}

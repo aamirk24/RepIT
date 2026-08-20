@@ -1,52 +1,126 @@
 {% extends "profile.html" %}
 {% block title %}Measurements{% endblock %}
 {% block settings_content %}
-<div class="settings-heading">
-    <div class="d-flex align-items-center gap-3">
-        <span class="settings-icon"><i class="bx bx-ruler"></i></span>
-        <div><p class="page-kicker mb-1">Body metrics</p><h2 class="section-title mb-1">Measurements</h2><p class="text-muted small mb-0">Track changes over time in your preferred units.</p></div>
-    </div>
-</div>
-
-<div class="row g-4 mt-1">
-    {% for kind, unit, values, dates, rows, modal_id in [
-        ('Height', height_unit, heights, height_dates, height_data, 'heightForm'),
-        ('Weight', weight_unit, weights, weight_dates, weight_data, 'weightForm')
-    ] %}
-    <div class="col-xl-6">
-        <section class="measurement-card h-100" aria-labelledby="{{ kind|lower }}-heading">
-            <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
-                <div><p class="metric-label mb-1">{{ kind }}</p><h3 id="{{ kind|lower }}-heading" class="measurement-current mb-0">{{ values[-1] if values else '—' }}{% if values %}<small>{{ unit }}</small>{% endif %}</h3><p class="text-muted small mb-0">{{ dates[-1] if dates else 'No entries yet' }}</p></div>
-                <button type="button" class="btn btn-brand btn-sm" data-bs-toggle="modal" data-bs-target="#{{ modal_id }}"><i class="bx bx-plus me-1"></i>Log {{ kind|lower }}</button>
+    <div class="settings-heading">
+        <div class="d-flex align-items-center gap-3">
+            <span class="settings-icon"><i class="bx bx-ruler"></i></span>
+            <div>
+                <p class="page-kicker mb-1">Body metrics</p>
+                <h2 class="section-title mb-1">Measurements</h2>
+                <p class="text-muted small mb-0">Track changes over time in your preferred units.</p>
             </div>
-            {% if values %}
-            <div class="measurement-chart"><canvas id="{{ kind|lower }}Chart" aria-label="{{ kind }} history chart" role="img"></canvas></div>
-            <details class="measurement-history mt-3"><summary>View measurement history</summary><div class="table-responsive mt-3"><table class="table app-table"><thead><tr><th>Date</th><th class="text-end">{{ kind }} ({{ unit }})</th></tr></thead><tbody>{% for value, date in rows|reverse %}<tr><td>{{ date }}</td><td class="text-end fw-semibold">{{ value }}</td></tr>{% endfor %}</tbody></table></div></details>
-            {% else %}
-            <div class="empty-state compact"><span class="empty-icon"><i class="bx bx-line-chart"></i></span><p class="text-muted mb-0">Log your first {{ kind|lower }} measurement to see a trend.</p></div>
-            {% endif %}
-        </section>
+        </div>
     </div>
+    <div class="row g-4 mt-1">
+        {% for kind, unit, values, dates, rows, modal_id in [
+            ('Height', height_unit, heights, height_dates, height_data, 'heightForm'),
+            ('Weight', weight_unit, weights, weight_dates, weight_data, 'weightForm')
+            ] %}
+            <div class="col-xl-6">
+                <section class="measurement-card h-100"
+                         aria-labelledby="{{ kind|lower }}-heading">
+                    <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+                        <div>
+                            <p class="metric-label mb-1">{{ kind }}</p>
+                            <h3 id="{{ kind|lower }}-heading" class="measurement-current mb-0">
+                                {{ values[-1] if values else '—' }}
+                                {% if values %}<small>{{ unit }}</small>{% endif %}
+                            </h3>
+                            <p class="text-muted small mb-0">{{ dates[-1] if dates else 'No entries yet' }}</p>
+                        </div>
+                        <button type="button"
+                                class="btn btn-brand btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#{{ modal_id }}">
+                            <i class="bx bx-plus me-1"></i>Log {{ kind|lower }}
+                        </button>
+                    </div>
+                    {% if values %}
+                        <div class="measurement-chart">
+                            <canvas id="{{ kind|lower }}Chart"
+                                    aria-label="{{ kind }} history chart"
+                                    role="img"></canvas>
+                        </div>
+                        <details class="measurement-history mt-3">
+                            <summary>View measurement history</summary>
+                            <div class="table-responsive mt-3">
+                                <table class="table app-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th class="text-end">{{ kind }} ({{ unit }})</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for value, date in rows|reverse %}
+                                            <tr>
+                                                <td>{{ date }}</td>
+                                                <td class="text-end fw-semibold">{{ value }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </details>
+                    {% else %}
+                        <div class="empty-state compact">
+                            <span class="empty-icon"><i class="bx bx-line-chart"></i></span>
+                            <p class="text-muted mb-0">Log your first {{ kind|lower }} measurement to see a trend.</p>
+                        </div>
+                    {% endif %}
+                </section>
+            </div>
+        {% endfor %}
+    </div>
+    {% for kind, unit, form, field, modal_id in [
+        ('Height', height_unit, heightForm, heightForm.height, 'heightForm'),
+        ('Weight', weight_unit, weightForm, weightForm.weight, 'weightForm')
+        ] %}
+        <div class="modal fade"
+             id="{{ modal_id }}"
+             tabindex="-1"
+             aria-labelledby="{{ modal_id }}Label"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="POST" action="{{ url_for('views.measurements') }}">
+                        {{ form.hidden_tag() }}
+                        <div class="modal-header">
+                            <div>
+                                <p class="page-kicker mb-1">New entry</p>
+                                <h2 class="modal-title fs-4" id="{{ modal_id }}Label">Log {{ kind|lower }}</h2>
+                            </div>
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body py-4">
+                            <div class="mb-3">
+                                {{ field.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ field(class="form-control", placeholder=kind ~ " in " ~ unit, inputmode="decimal") }}<span class="input-group-text">{{ unit }}</span>
+                                </div>
+                                {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div>
+                                {{ form.date.label(class="form-label") }}{{ form.date(class="form-control") }}
+                                {% for error in form.date.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-quiet" data-bs-dismiss="modal">Cancel</button>
+                            {{ form.submit(class="btn btn-brand", value="Save measurement") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     {% endfor %}
-</div>
-
-{% for kind, unit, form, field, modal_id in [
-    ('Height', height_unit, heightForm, heightForm.height, 'heightForm'),
-    ('Weight', weight_unit, weightForm, weightForm.weight, 'weightForm')
-] %}
-<div class="modal fade" id="{{ modal_id }}" tabindex="-1" aria-labelledby="{{ modal_id }}Label" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><form method="POST" action="{{ url_for('views.measurements') }}">{{ form.hidden_tag() }}
-        <div class="modal-header"><div><p class="page-kicker mb-1">New entry</p><h2 class="modal-title fs-4" id="{{ modal_id }}Label">Log {{ kind|lower }}</h2></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-        <div class="modal-body py-4"><div class="mb-3">{{ field.label(class="form-label") }}<div class="input-group">{{ field(class="form-control", placeholder=kind ~ " in " ~ unit, inputmode="decimal") }}<span class="input-group-text">{{ unit }}</span></div>{% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}</div><div>{{ form.date.label(class="form-label") }}{{ form.date(class="form-control") }}{% for error in form.date.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}</div></div>
-        <div class="modal-footer"><button type="button" class="btn btn-quiet" data-bs-dismiss="modal">Cancel</button>{{ form.submit(class="btn btn-brand", value="Save measurement") }}</div>
-    </form></div></div>
-</div>
-{% endfor %}
 {% endblock %}
-
 {% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<script nonce="{{ g.csp_nonce }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script nonce="{{ g.csp_nonce }}">
 document.addEventListener('DOMContentLoaded', () => {
     const chartData = {
         height: {labels: {{ height_dates|tojson }}, values: {{ heights|tojson }}, unit: {{ height_unit|tojson }}},
@@ -60,5 +134,5 @@ document.addEventListener('DOMContentLoaded', () => {
     {% if heightForm.errors %}bootstrap.Modal.getOrCreateInstance(document.getElementById('heightForm')).show();{% endif %}
     {% if weightForm.errors %}bootstrap.Modal.getOrCreateInstance(document.getElementById('weightForm')).show();{% endif %}
 });
-</script>
+    </script>
 {% endblock %}

@@ -1,18 +1,61 @@
 {% extends "base.html" %}
 {% block title %}{{ exercise.name }}{% endblock %}
-{% block stylesheet %}<script src="{{ url_for('static', filename='js/exercise_frames.js') }}" defer></script>{% endblock %}
+{% block stylesheet %}
+    <script src="{{ url_for('static', filename='js/exercise_frames.js') }}" defer></script>
+{% endblock %}
 {% block content %}
-<div class="container-xl app-shell">
-    <a class="small text-decoration-none" href="{{ url_for('views.exercise_library') }}"><i class="bx bx-left-arrow-alt"></i> Back to exercises</a>
-    <div class="row g-4 g-xl-5 mt-1 align-items-start">
-        <div class="col-lg-6"><div class="app-card p-0 overflow-hidden"><div class="exercise-media" style="aspect-ratio: 4 / 3;">{% if exercise.image_urls %}<img class="exercise-demo-image" src="{{ exercise.image_urls[0] }}" data-frame-one="{{ exercise.image_urls[0] }}" {% if exercise.image_urls|length > 1 %}data-frame-two="{{ exercise.image_urls[1] }}"{% endif %} data-frame-index="0" alt="Demonstration of {{ exercise.name }}">{% endif %}</div></div></div>
-        <div class="col-lg-6">
-            <p class="page-kicker">{{ exercise.category|title }}</p><h1 class="page-title">{{ exercise.name }}</h1><p class="page-copy">{{ exercise.description }}</p>
-            <div class="d-flex flex-wrap gap-2 my-4"><span class="pill"><i class="bx bx-target-lock"></i>{{ exercise.target|title }}</span><span class="pill"><i class="bx bx-dumbbell"></i>{{ exercise.equipment|title }}</span><span class="pill"><i class="bx bx-signal-4"></i>{{ exercise.difficulty|title }}</span></div>
-            <div class="app-card mb-3"><h2 class="section-title">How to perform it</h2><ol class="mb-0 ps-3">{% for instruction in exercise.instructions %}<li class="mb-3 ps-2">{{ instruction }}</li>{% endfor %}</ol></div>
-            {% if exercise.secondary_muscles %}<div class="app-card"><h2 class="section-title">Also works</h2><div class="d-flex flex-wrap gap-2">{% for muscle in exercise.secondary_muscles %}<span class="pill">{{ muscle|title }}</span>{% endfor %}</div></div>{% endif %}
-            {% if exercise.has_attribution %}<p class="small text-muted mt-3">{{ exercise.attribution_text }} {% if exercise.source_url %}<a href="{{ exercise.source_url }}" target="_blank" rel="noopener noreferrer">View source</a>{% endif %}</p>{% endif %}
+    <div class="container-xl app-shell">
+        <a class="small text-decoration-none"
+           href="{{ url_for('views.exercise_library') }}"><i class="bx bx-left-arrow-alt"></i> Back to exercises</a>
+        <div class="row g-4 g-xl-5 mt-1 align-items-start">
+            <div class="col-lg-6">
+                <div class="app-card p-0 overflow-hidden">
+                    <div class="exercise-media" style="aspect-ratio: 4 / 3;">
+                        {% if exercise.image_urls %}
+                            <img class="exercise-demo-image"
+                                 src="{{ exercise.image_urls[0] }}"
+                                 data-frame-one="{{ exercise.image_urls[0] }}"
+                                 {% if exercise.image_urls|length > 1 %}data-frame-two="{{ exercise.image_urls[1] }}"{% endif %}
+                                 data-frame-index="0"
+                                 alt="Demonstration of {{ exercise.name }}">
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <p class="page-kicker">{{ exercise.category|title }}</p>
+                <h1 class="page-title">{{ exercise.name }}</h1>
+                <p class="page-copy">{{ exercise.description }}</p>
+                <div class="d-flex flex-wrap gap-2 my-4">
+                    <span class="pill"><i class="bx bx-target-lock"></i>{{ exercise.target|title }}</span>
+                    <span class="pill"><i class="bx bx-dumbbell"></i>{{ exercise.equipment|title }}</span>
+                    <span class="pill"><i class="bx bx-signal-4"></i>{{ exercise.difficulty|title }}</span>
+                </div>
+                <div class="app-card mb-3">
+                    <h2 class="section-title">How to perform it</h2>
+                    <ol class="mb-0 ps-3">
+                        {% for instruction in exercise.instructions %}<li class="mb-3 ps-2">{{ instruction }}</li>{% endfor %}
+                    </ol>
+                </div>
+                {% if exercise.secondary_muscles %}
+                    <div class="app-card">
+                        <h2 class="section-title">Also works</h2>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for muscle in exercise.secondary_muscles %}<span class="pill">{{ muscle|title }}</span>{% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if exercise.has_attribution %}
+                    <p class="small text-muted mt-3">
+                        {{ exercise.attribution_text }}
+                        {% if exercise.source_url %}
+                            <a href="{{ exercise.source_url }}"
+                               target="_blank"
+                               rel="noopener noreferrer">View source</a>
+                        {% endif %}
+                    </p>
+                {% endif %}
+            </div>
         </div>
     </div>
-</div>
 {% endblock %}

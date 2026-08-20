@@ -1,14 +1,135 @@
 {% extends "base.html" %}
 {% block title %}Train{% endblock %}
-{% block stylesheet %}<script src="{{ url_for('static', filename='js/exercise_frames.js') }}" defer></script><script src="{{ url_for('static', filename='js/workout_tracking.js', v='dashboard-redirect-v1') }}" defer></script>{% endblock %}
+{% block stylesheet %}
+    <script src="{{ url_for('static', filename='js/exercise_frames.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/workout_tracking.js', v='dashboard-redirect-v1') }}" defer></script>
+{% endblock %}
 {% block content %}
-<div class="container-xl app-shell" id="tracking-app" data-routine-id="{{ requested_routine_id or '' }}" data-weight-unit="{{ weight_unit }}" data-exercise-api="{{ url_for('views.get_all_exercises') }}"><script id="active-workout-data" type="application/json" nonce="{{ g.csp_nonce }}">{{ active_session_payload|tojson }}</script>
-<header class="mb-4"><p class="page-kicker">Workout logger</p><h1 class="page-title">Train without distractions</h1><p class="page-copy">Your active session stays saved as you go, so you can focus on the work.</p></header>
-<div class="row g-4"><aside class="col-lg-3"><div class="app-card training-sidebar"><button id="custom-workout-btn" class="btn btn-brand w-100"><i class="bx bx-plus me-1"></i>Start empty workout</button><div class="d-flex justify-content-between align-items-center mt-4 mb-2"><h2 class="h6 mb-0">Saved routines</h2><a class="small" href="{{ url_for('views.create_workout') }}">New</a></div>
-{% if workouts %}<div class="d-grid gap-2">{% for workout in workouts %}<article class="training-routine"><button type="button" class="training-routine-main start-routine-btn" data-routine-id="{{ workout.id }}"><span><strong>{{ workout.name }}</strong><small>{{ workout.exercises|length }} exercises</small></span><i class="bx bx-play-circle"></i></button><a class="training-routine-edit" href="{{ url_for('views.edit_workout', workout_id=workout.id) }}" aria-label="View and edit {{ workout.name }}"><i class="bx bx-edit-alt"></i></a></article>{% endfor %}</div>{% else %}<p class="small text-muted mt-3">No routines yet. Build one to start faster next time.</p>{% endif %}</div></aside>
-<div class="col-lg-9"><section id="no-active-workout" class="app-card empty-state training-empty"><span class="empty-icon"><i class="bx bx-dumbbell"></i></span><h2 class="h3">Ready when you are</h2><p class="text-muted mx-auto">Start an empty workout or choose a saved routine. Your timer begins immediately.</p><button class="btn btn-brand d-lg-none" type="button" id="mobile-start-workout">Start workout</button></section>
-<section id="active-workout" class="d-none"><div class="active-workout-header mb-3"><div class="d-flex flex-wrap justify-content-between align-items-center gap-3"><div><span class="active-label"><span class="live-dot"></span>Active session</span><span id="timer" class="workout-timer">00:00:00</span></div><div class="d-flex gap-2"><button id="discard-workout-btn" class="btn btn-outline-light btn-sm">Discard</button><button id="end-workout-btn" class="btn btn-light btn-sm">Finish workout</button></div></div><div class="row g-3 mt-1"><div class="col-md-5"><label for="active-workout-name" class="form-label text-white">Workout name</label><input id="active-workout-name" class="form-control" maxlength="150"></div><div class="col-md-7"><label for="active-workout-notes" class="form-label text-white">Session notes</label><textarea id="active-workout-notes" class="form-control" maxlength="2000" rows="2" placeholder="Energy, technique, how it felt…"></textarea></div></div><div class="d-flex justify-content-between align-items-center mt-3"><button id="save-workout-draft-btn" type="button" class="btn btn-sm btn-outline-light">Save details</button><p id="workout-status" class="small mb-0 text-white" aria-live="polite"></p></div></div>
-<div id="workout-exercises" class="d-grid gap-3"></div><button id="add-exercise-btn" class="btn btn-outline-brand mt-3"><i class="bx bx-plus me-1"></i>Add exercise</button></section></div></div></div>
-
-<div class="modal fade" id="exerciseSearchModal" tabindex="-1" aria-labelledby="exerciseSearchTitle" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><div><p class="page-kicker mb-1">Exercise catalogue</p><h2 class="modal-title h4" id="exerciseSearchTitle">Add to workout</h2></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><div class="input-icon-wrap mb-3"><i class="bx bx-search"></i><input type="search" id="exercise-search-input" class="form-control" placeholder="Search exercise names" autocomplete="off"></div><div id="exercise-search-results" class="exercise-picker-grid" aria-live="polite"></div><div class="text-center mt-3"><button id="tracking-load-more" type="button" class="btn btn-outline-brand">Load more</button></div></div></div></div></div>
+    <div class="container-xl app-shell"
+         id="tracking-app"
+         data-routine-id="{{ requested_routine_id or '' }}"
+         data-weight-unit="{{ weight_unit }}"
+         data-exercise-api="{{ url_for('views.get_all_exercises') }}">
+        <script id="active-workout-data"
+                type="application/json"
+                nonce="{{ g.csp_nonce }}">{{ active_session_payload|tojson }}</script>
+        <header class="mb-4">
+            <p class="page-kicker">Workout logger</p>
+            <h1 class="page-title">Train without distractions</h1>
+            <p class="page-copy">Your active session stays saved as you go, so you can focus on the work.</p>
+        </header>
+        <div class="row g-4">
+            <aside class="col-lg-3">
+                <div class="app-card training-sidebar">
+                    <button id="custom-workout-btn" class="btn btn-brand w-100">
+                        <i class="bx bx-plus me-1"></i>Start empty workout
+                    </button>
+                    <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+                        <h2 class="h6 mb-0">Saved routines</h2>
+                        <a class="small" href="{{ url_for('views.create_workout') }}">New</a>
+                    </div>
+                    {% if workouts %}
+                        <div class="d-grid gap-2">
+                            {% for workout in workouts %}
+                                <article class="training-routine">
+                                    <button type="button"
+                                            class="training-routine-main start-routine-btn"
+                                            data-routine-id="{{ workout.id }}">
+                                        <span><strong>{{ workout.name }}</strong><small>{{ workout.exercises|length }} exercises</small></span><i class="bx bx-play-circle"></i>
+                                    </button>
+                                    <a class="training-routine-edit"
+                                       href="{{ url_for('views.edit_workout', workout_id=workout.id) }}"
+                                       aria-label="View and edit {{ workout.name }}"><i class="bx bx-edit-alt"></i></a></article>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="small text-muted mt-3">No routines yet. Build one to start faster next time.</p>
+                    {% endif %}
+                </div>
+            </aside>
+            <div class="col-lg-9">
+                <section id="no-active-workout" class="app-card empty-state training-empty">
+                    <span class="empty-icon"><i class="bx bx-dumbbell"></i></span>
+                    <h2 class="h3">Ready when you are</h2>
+                    <p class="text-muted mx-auto">Start an empty workout or choose a saved routine. Your timer begins immediately.</p>
+                    <button class="btn btn-brand d-lg-none"
+                            type="button"
+                            id="mobile-start-workout">Start workout</button>
+                </section>
+                <section id="active-workout" class="d-none">
+                    <div class="active-workout-header mb-3">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                            <div>
+                                <span class="active-label"><span class="live-dot"></span>Active session</span><span id="timer" class="workout-timer">00:00:00</span>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button id="discard-workout-btn" class="btn btn-outline-light btn-sm">Discard</button>
+                                <button id="end-workout-btn" class="btn btn-light btn-sm">Finish workout</button>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-5">
+                                <label for="active-workout-name" class="form-label text-white">Workout name</label>
+                                <input id="active-workout-name" class="form-control" maxlength="150">
+                            </div>
+                            <div class="col-md-7">
+                                <label for="active-workout-notes" class="form-label text-white">Session notes</label>
+                                <textarea id="active-workout-notes"
+                                          class="form-control"
+                                          maxlength="2000"
+                                          rows="2"
+                                          placeholder="Energy, technique, how it felt…"></textarea>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <button id="save-workout-draft-btn"
+                                    type="button"
+                                    class="btn btn-sm btn-outline-light">Save details</button>
+                            <p id="workout-status" class="small mb-0 text-white" aria-live="polite"></p>
+                        </div>
+                    </div>
+                    <div id="workout-exercises" class="d-grid gap-3"></div>
+                    <button id="add-exercise-btn" class="btn btn-outline-brand mt-3">
+                        <i class="bx bx-plus me-1"></i>Add exercise
+                    </button>
+                </section>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade"
+         id="exerciseSearchModal"
+         tabindex="-1"
+         aria-labelledby="exerciseSearchTitle"
+         aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <p class="page-kicker mb-1">Exercise catalogue</p>
+                        <h2 class="modal-title h4" id="exerciseSearchTitle">Add to workout</h2>
+                    </div>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-icon-wrap mb-3">
+                        <i class="bx bx-search"></i>
+                        <input type="search"
+                               id="exercise-search-input"
+                               class="form-control"
+                               placeholder="Search exercise names"
+                               autocomplete="off">
+                    </div>
+                    <div id="exercise-search-results"
+                         class="exercise-picker-grid"
+                         aria-live="polite"></div>
+                    <div class="text-center mt-3">
+                        <button id="tracking-load-more" type="button" class="btn btn-outline-brand">Load more</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

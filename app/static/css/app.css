@@ -24,7 +24,7 @@
 
 html { scroll-behavior: smooth; }
 body { min-height: 100vh; color: var(--ink); background: var(--canvas); font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; }
-h1, h2, h3, h4, h5, h6, .font-blatant { font-family: Blatant, 'Plus Jakarta Sans', sans-serif; letter-spacing: -.02em; }
+h1, h2, h3, h4, h5, h6 { font-family: Blatant, 'Plus Jakarta Sans', sans-serif; letter-spacing: -.02em; }
 a { color: var(--brand); text-underline-offset: 3px; }
 img { max-width: 100%; }
 .text-muted { color: var(--muted) !important; }
@@ -34,8 +34,6 @@ img { max-width: 100%; }
 .app-navbar { min-height: 72px; background: rgba(245, 246, 242, .92); border-bottom: 1px solid rgba(220, 226, 221, .85); backdrop-filter: blur(14px); }
 .app-brand { display: inline-flex; align-items: center; gap: .6rem; color: var(--ink); font-family: Blatant, sans-serif; font-weight: 700; text-decoration: none; }
 .navbar-brand.app-brand { font-size: 1.55rem; letter-spacing: -.045em; }
-.brand-mark { display: inline-grid; width: 2rem; height: 2rem; place-items: center; color: #fff; background: var(--brand); border-radius: .65rem; font-size: .95rem; }
-.brand-mark-sm { width: 1.6rem; height: 1.6rem; border-radius: .45rem; font-size: .75rem; }
 .navbar-nav .nav-link { padding: .55rem .85rem !important; color: var(--muted); border-radius: .65rem; font-size: .92rem; font-weight: 600; }
 .navbar-nav .nav-link:hover, .navbar-nav .nav-link.active { color: var(--ink); background: var(--surface-soft); }
 .profile-trigger { display: grid; width: 2.45rem; height: 2.45rem; place-items: center; border: 0; color: #fff; background: var(--ink); border-radius: 50%; font-weight: 700; }
@@ -44,10 +42,10 @@ img { max-width: 100%; }
 
 .btn { border-radius: .72rem; font-weight: 700; transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease; }
 .btn:hover { transform: translateY(-1px); }
-.btn-brand, .btn-signup { color: #fff; background: var(--brand); border: 1px solid var(--brand); }
-.btn-brand:hover, .btn-signup:hover { color: #fff; background: var(--brand-strong); border-color: var(--brand-strong); box-shadow: 0 7px 18px rgba(23, 63, 53, .18); }
-.btn-quiet, .btn-login { color: var(--ink); background: transparent; border: 1px solid transparent; }
-.btn-quiet:hover, .btn-login:hover { color: var(--ink); background: var(--surface-soft); }
+.btn-brand { color: #fff; background: var(--brand); border: 1px solid var(--brand); }
+.btn-brand:hover { color: #fff; background: var(--brand-strong); border-color: var(--brand-strong); box-shadow: 0 7px 18px rgba(23, 63, 53, .18); }
+.btn-quiet { color: var(--ink); background: transparent; border: 1px solid transparent; }
+.btn-quiet:hover { color: var(--ink); background: var(--surface-soft); }
 .btn-outline-brand { color: var(--brand); background: transparent; border: 1px solid var(--brand); }
 .btn-outline-brand:hover { color: #fff; background: var(--brand); }
 .btn-delete { color: var(--danger); background: #fff; border: 1px solid #e7c9c6; }
@@ -70,8 +68,6 @@ img { max-width: 100%; }
 .resume-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.4rem 1.5rem; color: #fff; background: var(--brand); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
 .resume-card .pill { color: #d9eee0; background: rgba(255,255,255,.12); }
 .live-dot { width: .45rem; height: .45rem; background: #a9e9bc; border-radius: 50%; box-shadow: 0 0 0 4px rgba(169,233,188,.13); }
-.history-row { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .75rem; }
-.history-main { display: flex; flex: 1; align-items: center; gap: .9rem; min-width: 0; }
 .history-date { display: grid; flex: 0 0 48px; height: 48px; place-content: center; text-align: center; background: var(--surface-soft); border-radius: .75rem; line-height: 1; }
 .history-date strong { font-family: Blatant, sans-serif; font-size: 1.1rem; }
 .history-date small { margin-top: .2rem; color: var(--muted); font-size: .66rem; text-transform: uppercase; }
@@ -132,8 +128,6 @@ img { max-width: 100%; }
 .training-routine-main strong, .training-routine-main small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .training-routine-main small { margin-top: .15rem; color: var(--muted); }
 .training-routine-main i { color: var(--brand); font-size: 1.25rem; }
-.training-routine-delete { border: 0; color: var(--muted); background: #fff; }
-.training-routine-delete:hover { color: var(--danger); background: #f8e9e7; }
 .training-routine-edit { display: grid; place-items: center; color: var(--muted); background: #fff; text-decoration: none; }
 .training-routine-edit:hover { color: var(--brand); background: var(--accent-soft); }
 .training-empty { min-height: 430px; display: grid; place-content: center; }
@@ -177,7 +171,6 @@ img { max-width: 100%; }
 .period-switcher a:hover, .period-switcher a.active { color: var(--ink); background: #fff; box-shadow: 0 2px 7px rgba(23, 36, 31, .08); }
 .streak-pill { display: inline-flex; align-items: center; gap: .5rem; padding: .55rem .75rem; color: var(--brand); background: var(--accent-soft); border-radius: 999px; font-size: .8rem; }
 .analytics-panel { padding: clamp(1.15rem, 3vw, 1.75rem); }
-.analytics-heading { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
 .weekly-chart { display: grid; grid-template-columns: repeat(12, minmax(38px, 1fr)); align-items: end; gap: .6rem; height: 250px; padding-top: 1.5rem; overflow-x: auto; }
 .weekly-column { display: grid; grid-template-rows: 1.5rem 1fr 2.5rem; align-items: end; min-width: 38px; height: 100%; text-align: center; }
 .weekly-bars { display: flex; align-items: end; justify-content: center; gap: 3px; height: 100%; }
@@ -202,8 +195,6 @@ img { max-width: 100%; }
 
 .flash-stack { position: fixed; z-index: 1100; top: 84px; left: 50%; transform: translateX(-50%); max-width: 680px; }
 .app-alert { border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-md); }
-.app-footer { padding: 2.5rem 0; border-top: 1px solid var(--line); background: var(--surface); }
-.app-footer a { color: var(--muted); text-decoration: none; }
 
 .product-landing-hero { padding: clamp(3.5rem, 7vw, 6rem) 0 0; overflow: hidden; background: linear-gradient(180deg, #edf4ef 0, var(--canvas) 72%); }
 .product-landing-title { max-width: 680px; margin: 0; font-size: clamp(3rem, 6vw, 5.25rem); line-height: .94; }

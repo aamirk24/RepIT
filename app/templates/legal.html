@@ -1,51 +1,34 @@
 {% extends "base.html" %}
-{% set documents = {
-    'privacy': {
-        'kicker': 'Privacy and data',
-        'title': 'Privacy policy',
-        'intro': 'This policy explains what RepIT stores, why it is needed, and the choices available to you.',
-        'sections': [
-            ('Data you provide', 'RepIT stores account details such as your email address, name and username; optional profile details; routines; workout sessions, sets and notes; unit preferences; and body measurements you choose to record.'),
-            ('How data is used', 'Your data is used to authenticate you, operate workout and analytics features, secure the service, diagnose failures, and maintain the exercise catalogue. RepIT does not sell personal data or use it for advertising.'),
-            ('Security and operational data', 'RepIT uses a temporary hashed identifier derived from login identity and network address to limit repeated failed logins. These records are removed after successful login or pruned after 30 days. Application logs contain request IDs, routes, status codes and timing, but deliberately omit form bodies, cookies and credentials.'),
-            ('Service providers', 'A deployed RepIT instance may use Render for application hosting, Neon for PostgreSQL storage, and Sentry for optional error monitoring. These providers process limited data needed to deliver their services under their own terms and privacy commitments.'),
-            ('Retention and deletion', 'Account and fitness data remains available until you delete individual workouts or your account. Account deletion immediately removes associated routines, sessions, sets and measurements from the active database. Managed database recovery copies may persist only for the configured backup window before expiring.'),
-            ('Your choices', 'You can review and update profile information, change units, delete completed workouts, or permanently delete your account from Account security. Do not enter sensitive medical information in workout notes.'),
-            ('Exercise data', 'Exercise descriptions and demonstrations come from a pinned public-domain Free Exercise DB snapshot. They are catalogue content, not personal data and not personalised medical guidance.'),
-            ('Changes', 'Material changes to this policy will be reflected on this page with an updated effective date. Because RepIT is a personal portfolio project, support and availability are provided on a best-effort basis.')
-        ]
-    },
-    'terms': {
-        'kicker': 'Using RepIT',
-        'title': 'Terms of use',
-        'intro': 'These terms set clear expectations for using this personal, non-commercial fitness project.',
-        'sections': [
-            ('The service', 'RepIT lets you create routines, log workouts and measurements, browse exercise information, and review training analytics. Features may change as the project develops.'),
-            ('Your account', 'Provide accurate account information, protect your password, and do not share access to your account. You are responsible for activity performed through your account.'),
-            ('Acceptable use', 'Do not attempt to disrupt the service, access another person’s data, automate abusive traffic, probe for vulnerabilities without permission, or use RepIT for unlawful activity.'),
-            ('Your data', 'You retain responsibility for the workout and profile information you enter. You grant RepIT only the limited permission necessary to store and process that data to provide the service.'),
-            ('Availability', 'RepIT is a personal portfolio project offered on a best-effort basis without a service-level commitment. Maintenance, provider limits, or project changes may temporarily interrupt access.'),
-            ('No professional advice', 'RepIT provides tracking tools and general exercise information. It does not provide medical, physiotherapy, nutrition, or professional coaching advice. The fitness disclaimer forms part of these terms.'),
-            ('Account removal', 'You may delete your account through Account security. Access may also be restricted where necessary to protect users, data, infrastructure, or the lawful operation of the service.'),
-            ('Third-party content', 'The exercise catalogue is derived from Free Exercise DB under its public-domain dedication. Hosting, database, and monitoring services may be supplied by third-party providers.')
-        ]
-    },
-    'disclaimer': {
-        'kicker': 'Train responsibly',
-        'title': 'Fitness disclaimer',
-        'intro': 'RepIT helps record training. It cannot determine whether an exercise or programme is safe for you.',
-        'sections': [
-            ('Not medical advice', 'Exercise descriptions, demonstrations, analytics and estimated one-repetition maximum values are general information only. They are not diagnosis, treatment, rehabilitation advice, or a substitute for a qualified professional.'),
-            ('Check before training', 'Consider consulting a doctor or appropriately qualified professional before beginning or changing an exercise programme, particularly if you have an injury, medical condition, are pregnant, or have concerns about your health.'),
-            ('Stop when necessary', 'Stop exercising and seek appropriate help if you experience chest pain, faintness, unusual shortness of breath, severe pain, or other concerning symptoms. In an emergency, contact local emergency services.'),
-            ('Exercise demonstrations', 'Images show general movement positions and cannot assess your technique, mobility, equipment setup, training history, or surroundings. Use suitable supervision where required.'),
-            ('Training estimates', 'Volume, streaks and estimated one-repetition maximums are simplified training metrics. Treat them as trend indicators, not instructions to attempt a maximal lift or ignore fatigue and pain.'),
-            ('Your responsibility', 'You decide what training to perform and are responsible for selecting appropriate exercises, loads, equipment, progression, supervision, and environment.')
-        ]
-    }
-} %}
+{% set documents = {'privacy': {'kicker': 'Privacy and data', 'title': 'Privacy policy', 'intro': 'This policy explains what RepIT stores, why it is needed, and the choices available to you.', 'sections': [('Data you provide', 'RepIT stores account details such as your email address, name and username; optional profile details; routines; workout sessions, sets and notes; unit preferences; and body measurements you choose to record.'), ('How data is used', 'Your data is used to authenticate you, operate workout and analytics features, secure the service, diagnose failures, and maintain the exercise catalogue. RepIT does not sell personal data or use it for advertising.'), ('Security and operational data', 'RepIT uses a temporary hashed identifier derived from login identity and network address to limit repeated failed logins. These records are removed after successful login or pruned after 30 days. Application logs contain request IDs, routes, status codes and timing, but deliberately omit form bodies, cookies and credentials.'), ('Service providers', 'A deployed RepIT instance may use Render for application hosting, Neon for PostgreSQL storage, and Sentry for optional error monitoring. These providers process limited data needed to deliver their services under their own terms and privacy commitments.'), ('Retention and deletion', 'Account and fitness data remains available until you delete individual workouts or your account. Account deletion immediately removes associated routines, sessions, sets and measurements from the active database. Managed database recovery copies may persist only for the configured backup window before expiring.'), ('Your choices', 'You can review and update profile information, change units, delete completed workouts, or permanently delete your account from Account security. Do not enter sensitive medical information in workout notes.'), ('Exercise data', 'Exercise descriptions and demonstrations come from a pinned public-domain Free Exercise DB snapshot. They are catalogue content, not personal data and not personalised medical guidance.'), ('Changes', 'Material changes to this policy will be reflected on this page with an updated effective date. Because RepIT is a personal portfolio project, support and availability are provided on a best-effort basis.')]}, 'terms': {'kicker': 'Using RepIT', 'title': 'Terms of use', 'intro': 'These terms set clear expectations for using this personal, non-commercial fitness project.', 'sections': [('The service', 'RepIT lets you create routines, log workouts and measurements, browse exercise information, and review training analytics. Features may change as the project develops.'), ('Your account', 'Provide accurate account information, protect your password, and do not share access to your account. You are responsible for activity performed through your account.'), ('Acceptable use', 'Do not attempt to disrupt the service, access another person’s data, automate abusive traffic, probe for vulnerabilities without permission, or use RepIT for unlawful activity.'), ('Your data', 'You retain responsibility for the workout and profile information you enter. You grant RepIT only the limited permission necessary to store and process that data to provide the service.'), ('Availability', 'RepIT is a personal portfolio project offered on a best-effort basis without a service-level commitment. Maintenance, provider limits, or project changes may temporarily interrupt access.'), ('No professional advice', 'RepIT provides tracking tools and general exercise information. It does not provide medical, physiotherapy, nutrition, or professional coaching advice. The fitness disclaimer forms part of these terms.'), ('Account removal', 'You may delete your account through Account security. Access may also be restricted where necessary to protect users, data, infrastructure, or the lawful operation of the service.'), ('Third-party content', 'The exercise catalogue is derived from Free Exercise DB under its public-domain dedication. Hosting, database, and monitoring services may be supplied by third-party providers.')]}, 'disclaimer': {'kicker': 'Train responsibly', 'title': 'Fitness disclaimer', 'intro': 'RepIT helps record training. It cannot determine whether an exercise or programme is safe for you.', 'sections': [('Not medical advice', 'Exercise descriptions, demonstrations, analytics and estimated one-repetition maximum values are general information only. They are not diagnosis, treatment, rehabilitation advice, or a substitute for a qualified professional.'), ('Check before training', 'Consider consulting a doctor or appropriately qualified professional before beginning or changing an exercise programme, particularly if you have an injury, medical condition, are pregnant, or have concerns about your health.'), ('Stop when necessary', 'Stop exercising and seek appropriate help if you experience chest pain, faintness, unusual shortness of breath, severe pain, or other concerning symptoms. In an emergency, contact local emergency services.'), ('Exercise demonstrations', 'Images show general movement positions and cannot assess your technique, mobility, equipment setup, training history, or surroundings. Use suitable supervision where required.'), ('Training estimates', 'Volume, streaks and estimated one-repetition maximums are simplified training metrics. Treat them as trend indicators, not instructions to attempt a maximal lift or ignore fatigue and pain.'), ('Your responsibility', 'You decide what training to perform and are responsible for selecting appropriate exercises, loads, equipment, progression, supervision, and environment.')]}} %}
 {% set page = documents[document] %}
 {% block title %}{{ page.title }}{% endblock %}
 {% block content %}
-<div class="container-lg app-shell legal-page"><a class="small text-decoration-none" href="{{ url_for('views.landing') }}"><i class="bx bx-left-arrow-alt"></i> Back to RepIT</a><header class="mt-4 mb-5"><p class="page-kicker">{{ page.kicker }}</p><h1 class="page-title">{{ page.title }}</h1><p class="page-copy">{{ page.intro }}</p><p class="legal-date">Effective 20 August 2026</p></header><div class="legal-layout"><nav class="legal-nav" aria-label="Legal documents"><a class="{{ 'active' if document == 'privacy' }}" href="{{ url_for('views.privacy') }}">Privacy policy</a><a class="{{ 'active' if document == 'terms' }}" href="{{ url_for('views.terms') }}">Terms of use</a><a class="{{ 'active' if document == 'disclaimer' }}" href="{{ url_for('views.fitness_disclaimer') }}">Fitness disclaimer</a></nav><article class="app-card legal-document">{% for heading, copy in page.sections %}<section><h2>{{ heading }}</h2><p>{{ copy }}</p></section>{% endfor %}</article></div></div>
+    <div class="container-lg app-shell legal-page">
+        <a class="small text-decoration-none"
+           href="{{ url_for('views.landing') }}"><i class="bx bx-left-arrow-alt"></i> Back to RepIT</a>
+        <header class="mt-4 mb-5">
+            <p class="page-kicker">{{ page.kicker }}</p>
+            <h1 class="page-title">{{ page.title }}</h1>
+            <p class="page-copy">{{ page.intro }}</p>
+            <p class="legal-date">Effective 20 August 2026</p>
+        </header>
+        <div class="legal-layout">
+            <nav class="legal-nav" aria-label="Legal documents">
+                <a class="{{ 'active' if document == 'privacy' }}"
+                   href="{{ url_for('views.privacy') }}">Privacy policy</a>
+                <a class="{{ 'active' if document == 'terms' }}"
+                   href="{{ url_for('views.terms') }}">Terms of use</a>
+                <a class="{{ 'active' if document == 'disclaimer' }}"
+                   href="{{ url_for('views.fitness_disclaimer') }}">Fitness disclaimer</a>
+            </nav>
+            <article class="app-card legal-document">
+                {% for heading, copy in page.sections %}
+                    <section>
+                        <h2>{{ heading }}</h2>
+                        <p>{{ copy }}</p>
+                    </section>
+                {% endfor %}
+            </article>
+        </div>
+    </div>
 {% endblock %}

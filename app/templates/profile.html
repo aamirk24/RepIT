@@ -1,4 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container-xl app-shell"><header class="mb-4"><p class="page-kicker">Preferences and privacy</p><h1 class="page-title">Settings</h1><p class="page-copy">Keep your profile, units, measurements, and account security up to date.</p></header><div class="row g-4"><aside class="col-lg-3"><nav class="settings-nav" aria-label="Settings"><a class="{{ 'active' if request.endpoint == 'views.profile_info' }}" href="{{ url_for('views.profile_info') }}"><i class="bx bx-user"></i><span>Profile information<small>Personal details and units</small></span></a><a class="{{ 'active' if request.endpoint == 'views.measurements' }}" href="{{ url_for('views.measurements') }}"><i class="bx bx-ruler"></i><span>Measurements<small>Height and body weight</small></span></a><a class="{{ 'active' if request.endpoint in ('views.account','views.change_password','views.delete_account') }}" href="{{ url_for('views.account') }}"><i class="bx bx-shield-quarter"></i><span>Account security<small>Password and deletion</small></span></a></nav></aside><div class="col-lg-9"><div class="app-card settings-panel">{% block settings_content %}{% endblock %}</div></div></div></div>
+    <div class="container-xl app-shell">
+        <header class="mb-4">
+            <p class="page-kicker">Preferences and privacy</p>
+            <h1 class="page-title">Settings</h1>
+            <p class="page-copy">Keep your profile, units, measurements, and account security up to date.</p>
+        </header>
+        <div class="row g-4">
+            <aside class="col-lg-3">
+                <nav class="settings-nav" aria-label="Settings">
+                    <a class="{{ 'active' if request.endpoint == 'views.profile_info' }}"
+                       href="{{ url_for('views.profile_info') }}">
+                        <i class="bx bx-user"></i>
+                        <span>Profile information<small>Personal details and units</small></span>
+                    </a>
+                    <a class="{{ 'active' if request.endpoint == 'views.measurements' }}"
+                       href="{{ url_for('views.measurements') }}">
+                        <i class="bx bx-ruler"></i>
+                        <span>Measurements<small>Height and body weight</small></span>
+                    </a>
+                    <a class="{{ 'active' if request.endpoint in ('views.account', 'views.change_password', 'views.delete_account') }}"
+                       href="{{ url_for('views.account') }}">
+                        <i class="bx bx-shield-quarter"></i>
+                        <span>Account security<small>Password and deletion</small></span>
+                    </a>
+                </nav>
+            </aside>
+            <div class="col-lg-9">
+                <div class="app-card settings-panel">
+                    {% block settings_content %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
