@@ -1,288 +1,64 @@
 {% extends "profile.html" %}
-{% block title %} Measurements {% endblock %}
-{% block stylesheet %}
-    <link href="../static/css/profile.css" rel="stylesheet" type="text/css">
+{% block title %}Measurements{% endblock %}
+{% block settings_content %}
+<div class="settings-heading">
+    <div class="d-flex align-items-center gap-3">
+        <span class="settings-icon"><i class="bx bx-ruler"></i></span>
+        <div><p class="page-kicker mb-1">Body metrics</p><h2 class="section-title mb-1">Measurements</h2><p class="text-muted small mb-0">Track changes over time in your preferred units.</p></div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    {% for kind, unit, values, dates, rows, modal_id in [
+        ('Height', height_unit, heights, height_dates, height_data, 'heightForm'),
+        ('Weight', weight_unit, weights, weight_dates, weight_data, 'weightForm')
+    ] %}
+    <div class="col-xl-6">
+        <section class="measurement-card h-100" aria-labelledby="{{ kind|lower }}-heading">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+                <div><p class="metric-label mb-1">{{ kind }}</p><h3 id="{{ kind|lower }}-heading" class="measurement-current mb-0">{{ values[-1] if values else '—' }}{% if values %}<small>{{ unit }}</small>{% endif %}</h3><p class="text-muted small mb-0">{{ dates[-1] if dates else 'No entries yet' }}</p></div>
+                <button type="button" class="btn btn-brand btn-sm" data-bs-toggle="modal" data-bs-target="#{{ modal_id }}"><i class="bx bx-plus me-1"></i>Log {{ kind|lower }}</button>
+            </div>
+            {% if values %}
+            <div class="measurement-chart"><canvas id="{{ kind|lower }}Chart" aria-label="{{ kind }} history chart" role="img"></canvas></div>
+            <details class="measurement-history mt-3"><summary>View measurement history</summary><div class="table-responsive mt-3"><table class="table app-table"><thead><tr><th>Date</th><th class="text-end">{{ kind }} ({{ unit }})</th></tr></thead><tbody>{% for value, date in rows|reverse %}<tr><td>{{ date }}</td><td class="text-end fw-semibold">{{ value }}</td></tr>{% endfor %}</tbody></table></div></details>
+            {% else %}
+            <div class="empty-state compact"><span class="empty-icon"><i class="bx bx-line-chart"></i></span><p class="text-muted mb-0">Log your first {{ kind|lower }} measurement to see a trend.</p></div>
+            {% endif %}
+        </section>
+    </div>
+    {% endfor %}
+</div>
+
+{% for kind, unit, form, field, modal_id in [
+    ('Height', height_unit, heightForm, heightForm.height, 'heightForm'),
+    ('Weight', weight_unit, weightForm, weightForm.weight, 'weightForm')
+] %}
+<div class="modal fade" id="{{ modal_id }}" tabindex="-1" aria-labelledby="{{ modal_id }}Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><form method="POST" action="{{ url_for('views.measurements') }}">{{ form.hidden_tag() }}
+        <div class="modal-header"><div><p class="page-kicker mb-1">New entry</p><h2 class="modal-title fs-4" id="{{ modal_id }}Label">Log {{ kind|lower }}</h2></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+        <div class="modal-body py-4"><div class="mb-3">{{ field.label(class="form-label") }}<div class="input-group">{{ field(class="form-control", placeholder=kind ~ " in " ~ unit, inputmode="decimal") }}<span class="input-group-text">{{ unit }}</span></div>{% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}</div><div>{{ form.date.label(class="form-label") }}{{ form.date(class="form-control") }}{% for error in form.date.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}</div></div>
+        <div class="modal-footer"><button type="button" class="btn btn-quiet" data-bs-dismiss="modal">Cancel</button>{{ form.submit(class="btn btn-brand", value="Save measurement") }}</div>
+    </form></div></div>
+</div>
+{% endfor %}
 {% endblock %}
-{% block measure %}|&nbsp;&nbsp;&nbsp;{% endblock %}
-{% block heading %}Measurements{% endblock %}
-{% block content %}
-    <div class="mt-2 py-1 d-flex justify-content-between align-items-center">
-        <h6 class="mt-2 py-1">
-            Log Height
-        </h6>
-        <div class="d-flex">
-            <div class="btn-group radioSwitch pe-2" role="group" aria-label="Basic radio toggle button group">
-                <input type="radio" class="btn-check" name="btnradioHeight" id="chartHeight" autocomplete="off" checked>
-                <label class="btn btn-outline-primary" for="chartHeight"><p class="text mb-0">Chart</p></label>
 
-                <input type="radio" class="btn-check" name="btnradioHeight" id="tableHeight" autocomplete="off">
-                <label class="btn btn-outline-primary" for="tableHeight"><p class="text mb-0">Table</p></label>
-            </div>
-            <button type="button" class="btn btn-delete d-flex justify-content-center align-items-center" data-bs-toggle="modal" data-bs-target="#heightForm">
-                +
-            </button>
-        </div>
-    </div>
-
-    <div class="card mb-4 heightCard">
-        <div class="card-body">
-            <canvas id="heightChart"></canvas>
-        </div>
-    </div>
-
-    <div class="card mb-4 heightTable" id="heightTable">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover text-center">
-                    <thead class="table-dark">
-                        <tr>
-                            <th scope="col">Date</th>
-                            <th scope="col">Height ({{ height_unit }})</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for height, date in height_data %}
-                            <tr>
-                                <td>{{ date }}</td>
-                                <td>{{ height }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="heightForm" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="staticBackdropLabel">Log Height</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <form method="POST" action="{{ url_for('views.measurements') }}">
-              {{ heightForm.hidden_tag() }}
-                  <div class="mb-3">
-                      <label>Height</label>
-                      <div class="input-group">
-                          {{ heightForm.height(class="form-control login-field text", placeholder="Height in " ~ height_unit) }}
-                      </div>
-                      {% for error in heightForm.height.errors %}
-                          <div class="text-danger small mt-1">{{ error }}</div>
-                      {% endfor %}
-                  </div>
-
-                  <div class="mb-3">
-                      <label>Date</label>
-                      <div class="input-group">
-                          {{ heightForm.date(class="form-control login-field text", placeholder="dd-mm-yyyy") }}
-                      </div>
-                      {% for error in heightForm.date.errors %}
-                          <div class="text-danger small mt-1">{{ error }}</div>
-                      {% endfor %}
-                  </div>
-
-                  <div class="modal-footer">
-                      {{ heightForm.submit(class="btn btn-signup w-100 py-2 mb-3", type="submit") }}
-                  </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-    <div class="my-1 py-1 d-flex justify-content-between align-items-center">
-        <h6 class="my-1 py-1">
-            Log Weight
-        </h6>
-        <div class="d-flex">
-            <div class="btn-group radioSwitch pe-2" role="group" aria-label="Basic radio toggle button group">
-                <input type="radio" class="btn-check" name="btnradioWeight" id="chartWeight" autocomplete="off" checked>
-                <label class="btn btn-outline-primary" for="chartWeight"><p class="text mb-0">Chart</p></label>
-
-                <input type="radio" class="btn-check" name="btnradioWeight" id="tableWeight" autocomplete="off">
-                <label class="btn btn-outline-primary" for="tableWeight"><p class="text mb-0">Table</p></label>
-            </div>
-            <button type="button" class="btn btn-delete d-flex justify-content-center align-items-center" data-bs-toggle="modal" data-bs-target="#weightForm">
-                +
-            </button>
-        </div>
-    </div>
-
-    <div class="card weightCard mb-4">
-        <div class="card-body">
-            <canvas id="weightChart"></canvas>
-        </div>
-    </div>
-
-    <div class="card mb-4 weightTable" id="weightTable">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover text-center">
-                    <thead class="table-dark">
-                        <tr>
-                            <th scope="col">Date</th>
-                            <th scope="col">Weight ({{ weight_unit }})</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for weight, date in weight_data %}
-                            <tr>
-                                <td>{{ date }}</td>
-                                <td>{{ weight }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="weightForm" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="staticBackdropLabel">Log Height</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <form method="POST" action="{{ url_for('views.measurements') }}">
-              {{ weightForm.hidden_tag() }}
-                  <div class="mb-3">
-                      <label>Weight</label>
-                      <div class="input-group">
-                          {{ weightForm.weight(class="form-control login-field text", placeholder="Weight in " ~ weight_unit) }}
-                      </div>
-                      {% for error in weightForm.weight.errors %}
-                          <div class="text-danger small mt-1">{{ error }}</div>
-                      {% endfor %}
-                  </div>
-
-                  <div class="mb-3">
-                      <label>Date</label>
-                      <div class="input-group">
-                          {{ weightForm.date(class="form-control login-field text", placeholder="dd-mm-yyyy") }}
-                      </div>
-                      {% for error in weightForm.date.errors %}
-                          <div class="text-danger small mt-1">{{ error }}</div>
-                      {% endfor %}
-                  </div>
-
-                  <div class="modal-footer">
-                      {{ weightForm.submit(class="btn btn-signup w-100 py-2 mb-3", type="submit") }}
-                  </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script nonce="{{ g.csp_nonce }}">
-    document.addEventListener('DOMContentLoaded', function() {
-        // Height Chart
-        var heightCtx = document.getElementById('heightChart').getContext('2d');
-        new Chart(heightCtx, {
-            type: 'line',
-            data: {
-                labels: {{ height_dates|tojson|safe }},
-                datasets: [{
-                    label: 'Height ({{ height_unit }})',
-                    data: {{ heights|tojson|safe }},
-                    borderColor: 'black',
-                    tension: 0
-                }]
-            },
-            options: {
-                plugins: {
-                    title: {
-                        display: true,
-                        text: "Height Chart"
-                    },
-                    legend: {
-                        display: false
-                    },
-                },
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: false
-                    }
-                }
-            }
-        });
-
-        // Weight Chart
-        var weightCtx = document.getElementById('weightChart').getContext('2d');
-        new Chart(weightCtx, {
-            type: 'line',
-            data: {
-                labels: {{ weight_dates|tojson|safe }},
-                datasets: [{
-                    label: 'Weight ({{ weight_unit }})',
-                    data: {{ weights|tojson|safe }},
-                    borderColor: 'black',
-                    tension: 0
-                }]
-            },
-            options: {
-                plugins: {
-                    title: {
-                        display: true,
-                        text: "Weight Chart"
-                    },
-                    legend: {
-                        display: false
-                    }
-                },
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: false
-                    }
-                }
-            }
-        });
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script nonce="{{ g.csp_nonce }}">
+document.addEventListener('DOMContentLoaded', () => {
+    const chartData = {
+        height: {labels: {{ height_dates|tojson }}, values: {{ heights|tojson }}, unit: {{ height_unit|tojson }}},
+        weight: {labels: {{ weight_dates|tojson }}, values: {{ weights|tojson }}, unit: {{ weight_unit|tojson }}}
+    };
+    Object.entries(chartData).forEach(([name, data]) => {
+        const canvas = document.getElementById(`${name}Chart`);
+        if (!canvas || !data.values.length) return;
+        new Chart(canvas, {type: 'line', data: {labels: data.labels, datasets: [{data: data.values, borderColor: '#173f35', backgroundColor: 'rgba(144, 181, 155, .16)', fill: true, tension: .32, pointRadius: 3, pointBackgroundColor: '#173f35'}]}, options: {maintainAspectRatio: false, plugins: {legend: {display: false}, tooltip: {callbacks: {label: context => `${context.parsed.y} ${data.unit}`}}}, scales: {x: {grid: {display: false}}, y: {beginAtZero: false, grid: {color: '#e5e9e5'}}}}});
     });
-
-    const chartHeight = document.getElementById("chartHeight");
-    const tableHeight = document.getElementById("tableHeight");
-    const chartWeight = document.getElementById("chartWeight");
-    const tableWeight = document.getElementById("tableWeight");
-
-    const weightTable = document.getElementById("weightTable");
-    const weightChart = document.querySelector(".weightCard");
-    const heightTable = document.getElementById("heightTable");
-    const heightChart = document.querySelector(".heightCard");
-
-    weightTable.style.display ="none";
-    heightTable.style.display ="none";
-
-    function switchView(){
-        if (chartHeight.checked){
-            heightChart.style.display = "block";
-            heightTable.style.display = "none";
-        } else if (tableHeight.checked) {
-            heightChart.style.display = "none";
-            heightTable.style.display = "block";
-        }
-
-        if (chartWeight.checked){
-            weightChart.style.display = "block";
-            weightTable.style.display = "none";
-        } else if (tableWeight.checked) {
-            weightChart.style.display = "none";
-            weightTable.style.display = "block";
-        }
-    }
-
-    chartHeight.addEventListener("change", switchView);
-    tableHeight.addEventListener("change", switchView);
-    chartWeight.addEventListener("change", switchView);
-    tableWeight.addEventListener("change", switchView);
-
-    </script>
+    {% if heightForm.errors %}bootstrap.Modal.getOrCreateInstance(document.getElementById('heightForm')).show();{% endif %}
+    {% if weightForm.errors %}bootstrap.Modal.getOrCreateInstance(document.getElementById('weightForm')).show();{% endif %}
+});
+</script>
 {% endblock %}

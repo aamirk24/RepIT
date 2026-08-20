@@ -1,111 +1,45 @@
 {% extends "base.html" %}
-{% block title %} Exercises {% endblock %}
-{% block stylesheet %}
-<link href="../static/css/exercise.css" rel="stylesheet" type="text/css">
-<script src="{{ url_for('static', filename='js/exercise_frames.js') }}" defer></script>
-{% endblock %}
-{% macro exercise_demo(exercise, modifier="") %}
-    {% if exercise.image_urls %}
-    <div class="exercise-demo {{ modifier }}">
-        <img
-            src="{{ exercise.image_urls[0] }}"
-            class="exercise-demo-image"
-            alt="Demonstration of {{ exercise.name }}"
-            loading="lazy"
-            data-frame-one="{{ exercise.image_urls[0] }}"
-            {% if exercise.image_urls|length > 1 %}data-frame-two="{{ exercise.image_urls[1] }}"{% endif %}
-            data-frame-index="0">
-    </div>
-    {% elif exercise.gifUrl %}
-    <img src="{{ exercise.gifUrl }}" class="card-img-top" alt="Demonstration of {{ exercise.name }}" loading="lazy">
-    {% endif %}
-{% endmacro %}
+{% block title %}Exercises{% endblock %}
+{% block stylesheet %}<script src="{{ url_for('static', filename='js/exercise_frames.js') }}" defer></script>{% endblock %}
 {% block content %}
-<div class="container">
-    <h2 class="font-blatant display-5 text-center my-4 mb-2">Exercise Library</h2>
-    <div class="row mb-4">
-        <div class="col-md-6 offset-md-3">
-            <input type="text" id="exerciseSearch" class="form-control" placeholder="Search exercises...">
-            <p id="exerciseCount" class="text-muted text-center mt-2">{{ exercises|length }} exercises</p>
-        </div>
-    </div>
+<div class="container-xl app-shell">
+    <header class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3 mb-4">
+        <div><p class="page-kicker">Movement library</p><h1 class="page-title">Find your next exercise</h1><p class="page-copy mb-0">Browse {{ pagination.total }} movements with instructions, equipment details, and visual demonstrations.</p></div>
+        <a class="btn btn-brand" href="{{ url_for('views.create_workout') }}"><i class="bx bx-list-plus me-1"></i>Build a routine</a>
+    </header>
 
-    <div class="row" id="exerciseGrid">
-        {% for exercise in exercises %}
-        <div class="col-lg-3 col-md-4 col-sm-6 mb-4 exercise-card"
-            data-name="{{ exercise.name.lower() }}"
-            data-target="{{ exercise.target.lower() }} {{ exercise.body_part.lower() }} {{ exercise.equipment.lower() }} {{ exercise.category.lower() }}">
-            <div class="card" data-bs-toggle="modal" data-bs-target="#exerciseModal{{ exercise.id }}">
-                {{ exercise_demo(exercise) }}
-                <div class="card-body">
-                    <h5 class="card-title">{{ exercise.name.title() }}</h5>
-                    <p class="card-text">
-                        Target: {{ exercise.target.title() }}<br>
-                        Equipment: {{ exercise.equipment.title() }}<br>
-                        Difficulty: {{ exercise.difficulty.title() }}<br>
-                        Secondary:
-                        {% for i in range(exercise.secondaryMuscles|length) %}
-                            {% if i != exercise.secondaryMuscles|length - 1 %}
-                                {{ exercise.secondaryMuscles[i].title() }},
-                            {% else %}
-                                {{ exercise.secondaryMuscles[i].title() }}
-                            {% endif %}
-                        {% endfor %}
-                    </p>
-                </div>
-            </div>
+    <form method="GET" class="app-card mb-4" aria-label="Exercise filters">
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-lg-5"><label for="exercise-search" class="form-label">Search</label><div class="input-icon-wrap"><i class="bx bx-search"></i><input id="exercise-search" class="form-control" type="search" name="q" value="{{ filters.get('q', '') }}" placeholder="Search by exercise name"></div></div>
+            <div class="col-6 col-lg-2"><label for="body-part" class="form-label">Body area</label><select id="body-part" class="form-select" name="body_part"><option value="">All</option>{% for value in facets.body_part %}<option value="{{ value }}" {% if filters.get('body_part') == value %}selected{% endif %}>{{ value|title }}</option>{% endfor %}</select></div>
+            <div class="col-6 col-lg-2"><label for="equipment" class="form-label">Equipment</label><select id="equipment" class="form-select" name="equipment"><option value="">All</option>{% for value in facets.equipment %}<option value="{{ value }}" {% if filters.get('equipment') == value %}selected{% endif %}>{{ value|title }}</option>{% endfor %}</select></div>
+            <div class="col-6 col-lg-2"><label for="difficulty" class="form-label">Level</label><select id="difficulty" class="form-select" name="difficulty"><option value="">All</option>{% for value in facets.difficulty %}<option value="{{ value }}" {% if filters.get('difficulty') == value %}selected{% endif %}>{{ value|title }}</option>{% endfor %}</select></div>
+            <div class="col-6 col-lg-1"><button class="btn btn-brand w-100" type="submit">Apply</button></div>
         </div>
-        {% endfor %}
+    </form>
 
+    <div class="d-flex justify-content-between align-items-center mb-3"><p class="small text-muted mb-0">Showing {{ exercises|length }} of {{ pagination.total }}</p>{% if filters.get('q') or filters.get('body_part') or filters.get('equipment') or filters.get('difficulty') %}<a class="small" href="{{ url_for('views.exercise_library') }}">Clear filters</a>{% endif %}</div>
+    {% if exercises %}
+    <div class="row g-3 g-xl-4">
         {% for exercise in exercises %}
-            <div class="modal fade" id="exerciseModal{{ exercise.id }}" tabindex="-1" aria-labelledby="exerciseModalLabel{{ exercise.id }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exerciseModalLabel{{ exercise.id }}">{{ exercise.name.title() }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            {{ exercise_demo(exercise, "exercise-demo-modal mb-3") }}
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <p><strong>{{ exercise.description }}</strong></p>
-                                    <p class="mb-0"><strong>Primary Muscle:</strong> {{ exercise.target.title() }}</p>
-                                    <p class="mb-0"><strong>Equipment:</strong> {{ exercise.equipment.title() }}</p>
-                                    <p class="mb-0"><strong>Difficulty:</strong> {{ exercise.difficulty.title() }}</p>
-                                </div>
-                            </div>
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <p class="mb-0"><strong>Secondary Muscles:</strong>
-                                    {% for i in range(exercise.secondaryMuscles|length) %}
-                                        {% if i != exercise.secondaryMuscles|length - 1 %}
-                                            {{ exercise.secondaryMuscles[i].title() }},
-                                        {% else %}
-                                            {{ exercise.secondaryMuscles[i].title() }}
-                                        {% endif %}
-                                    {% endfor %}
-                                    </p>
-                                </div>
-                            </div>
-                            {% if exercise.has_attribution %}
-                            <p class="small text-muted">{{ exercise.attribution_text }}{% if exercise.source_url %} <a href="{{ exercise.source_url }}" target="_blank" rel="noopener noreferrer">Source</a>{% endif %}</p>
-                            {% endif %}
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <p class="mb-0"><strong>Description:<br></strong>
-                                    {% for i in range(exercise.instructions|length) %}
-                                            {{ i + 1 }}. {{ exercise.instructions[i] }} <br>
-                                    {% endfor %}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+        <div class="col-6 col-md-4 col-xl-3">
+            <article class="card exercise-card interactive-card">
+                <a href="{{ url_for('views.exercise_detail', exercise_id=exercise.id) }}" class="text-decoration-none text-reset">
+                    <div class="exercise-media">
+                        {% if exercise.image_urls %}<img class="exercise-demo-image" src="{{ exercise.image_urls[0] }}" data-frame-one="{{ exercise.image_urls[0] }}" {% if exercise.image_urls|length > 1 %}data-frame-two="{{ exercise.image_urls[1] }}"{% endif %} data-frame-index="0" alt="Demonstration of {{ exercise.name }}" loading="lazy">
+                        {% elif exercise.image_url %}<img src="{{ exercise.image_url }}" alt="Demonstration of {{ exercise.name }}" loading="lazy">{% endif %}
                     </div>
-                </div>
-            </div>
+                    <div class="card-body"><h2 class="exercise-card-title">{{ exercise.name }}</h2><p class="small text-muted mb-3">{{ exercise.target|title }}</p><div class="exercise-meta"><span class="pill">{{ exercise.equipment|title }}</span><span class="pill">{{ exercise.difficulty|title }}</span></div></div>
+                </a>
+            </article>
+        </div>
         {% endfor %}
-
     </div>
+    <nav class="mt-5" aria-label="Exercise pages"><ul class="pagination justify-content-center">
+        <li class="page-item {{ 'disabled' if not pagination.has_prev }}"><a class="page-link" href="{{ url_for('views.exercise_library', page=pagination.prev_num, q=filters.get('q'), body_part=filters.get('body_part'), equipment=filters.get('equipment'), difficulty=filters.get('difficulty')) if pagination.has_prev else '#' }}">Previous</a></li>
+        <li class="page-item disabled"><span class="page-link">Page {{ pagination.page }} of {{ pagination.pages }}</span></li>
+        <li class="page-item {{ 'disabled' if not pagination.has_next }}"><a class="page-link" href="{{ url_for('views.exercise_library', page=pagination.next_num, q=filters.get('q'), body_part=filters.get('body_part'), equipment=filters.get('equipment'), difficulty=filters.get('difficulty')) if pagination.has_next else '#' }}">Next</a></li>
+    </ul></nav>
+    {% else %}<div class="app-card empty-state"><span class="empty-icon"><i class="bx bx-search-alt"></i></span><h2 class="h4">No exercises found</h2><p class="text-muted">Try a broader search or clear one of the filters.</p><a class="btn btn-outline-brand" href="{{ url_for('views.exercise_library') }}">Reset filters</a></div>{% endif %}
 </div>
 {% endblock %}

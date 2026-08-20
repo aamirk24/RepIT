@@ -3,14 +3,15 @@ function getCsrfToken() {
     return token ? token.content : '';
 }
 
-async function deleteRecord(url, body) {
+async function deleteRecord(url, body, redirectUrl = '') {
     const response = await fetch(url, {
         method: 'POST',
         headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken()},
         body: JSON.stringify(body)
     });
     if (!response.ok) throw new Error('The item could not be deleted.');
-    window.location.reload();
+    if (redirectUrl) window.location.assign(redirectUrl);
+    else window.location.reload();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
             event.stopPropagation();
             if (!window.confirm('Delete this routine? Completed workout history will be retained.')) return;
             try {
-                await deleteRecord('/delete_workout', {workoutId: button.dataset.deleteWorkoutId});
+                await deleteRecord('/delete_workout', {workoutId: button.dataset.deleteWorkoutId}, button.dataset.deleteRedirect);
             } catch (error) { window.alert(error.message); }
         });
     });

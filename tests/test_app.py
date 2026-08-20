@@ -342,6 +342,33 @@ class RepITTestCase(unittest.TestCase):
             self.assertIsNotNone(session.end_time)
             self.assertEqual(db.session.scalar(db.select(db.func.count(ExerciseSet.id))), 1)
 
+    def test_routine_can_be_viewed_and_edited_only_by_its_owner(self):
+        self.signup()
+        with self.app.app_context():
+            exercise_ids = list(db.session.scalars(db.select(Exercise.id).order_by(Exercise.id).limit(3)))
+        self.client.post(
+            "/create_workout",
+            data={"name": "Original routine", "description": "Before", "exercises": exercise_ids[:2]},
+        )
+        with self.app.app_context():
+            workout_id = db.session.scalar(db.select(Workout.id).where(Workout.name == "Original routine"))
+        response = self.client.get(f"/routine/{workout_id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Edit your routine", response.data)
+        response = self.client.post(
+            f"/routine/{workout_id}",
+            data={"name": "Updated routine", "description": "After", "exercises": exercise_ids},
+            follow_redirects=True,
+        )
+        self.assertIn(b"Routine updated", response.data)
+        with self.app.app_context():
+            workout = db.session.get(Workout, workout_id)
+            self.assertEqual(workout.name, "Updated routine")
+            self.assertEqual({item.id for item in workout.exercises}, set(exercise_ids))
+        self.client.post("/logout")
+        self.signup("other@example.com", "other-user")
+        self.assertEqual(self.client.get(f"/routine/{workout_id}").status_code, 404)
+
     def test_active_workout_is_recovered_instead_of_duplicated(self):
         self.signup()
         first = self.client.post("/start_empty_workout", json={}).get_json()

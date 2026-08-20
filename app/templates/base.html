@@ -1,106 +1,83 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#173f35">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-    <link href="../static/css/base.css" rel="stylesheet" type="text/css">
-    {% block stylesheet %}  {% endblock %}
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Hind:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Quicksand:wght@300..700&display=swap');
-
-        body{
-            font-family: "Plus Jakarta Sans", sans-serif;
-        }
-
-        {% block css %}
-        {% endblock %}
-    </style>
-    <title>{% block title %}  {% endblock %}</title>
+    <link href="{{ url_for('static', filename='css/app.css') }}" rel="stylesheet">
+    {% block stylesheet %}{% endblock %}
+    <title>{% block title %}RepIT{% endblock %} · RepIT</title>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white nav-shadow">
-        <div class="container">
-            <!-- Navbar Brand -->
-            {% if user.is_authenticated %}
-                <a class="navbar-brand fw-bold fs-4" href="/">RepIT</a>
-            {% else %}
-                <a class="navbar-brand fw-bold fs-4" href="/landing">RepIT</a>
-            {% endif %}
-
-            <button
-                class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarContent"
-                aria-controls="navbarContent"
-                aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
+<body class="{% block body_class %}{% endblock %}">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <nav class="navbar navbar-expand-lg app-navbar sticky-top" aria-label="Primary navigation">
+        <div class="container-xl">
+            <a class="navbar-brand app-brand" href="{{ url_for('views.dashboard') if user.is_authenticated else url_for('views.landing') }}" aria-label="RepIT home">
+                <span>RepIT</span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#primaryNav" aria-controls="primaryNav" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bx bx-menu fs-2"></i>
             </button>
-
-            <div class="collapse navbar-collapse" id="navbarContent">
+            <div class="collapse navbar-collapse" id="primaryNav">
                 {% if user.is_authenticated %}
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item mx-lg-3">
-                        <a class="nav-link text-secondary" href="/">Dashboard</a>
-                    </li>
-                    <li class="nav-item mx-lg-3">
-                        <a class="nav-link text-secondary" href="/exercise">Exercises</a>
-                    </li>
-                    <li class="nav-item mx-lg-3">
-                        <a class="nav-link text-secondary" href="/tracking">Tracking</a>
-                    </li>
-                    <li class="nav-item mx-lg-3">
-                        <a class="nav-link text-secondary" href="{{ url_for('views.progress') }}">Progress</a>
-                    </li>
-                    <li class="nav-item mx-lg-3">
-                        <a class="nav-link text-secondary" href="/faq">FAQ</a>
-                    </li>
+                <ul class="navbar-nav mx-auto gap-lg-1">
+                    <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'views.dashboard' }}" href="{{ url_for('views.dashboard') }}">Overview</a></li>
+                    <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint in ('views.exercise_library', 'views.exercise_detail') }}" href="{{ url_for('views.exercise_library') }}">Exercises</a></li>
+                    <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'views.tracking' }}" href="{{ url_for('views.tracking') }}">Train</a></li>
+                    <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'views.progress' }}" href="{{ url_for('views.progress') }}">Progress</a></li>
                 </ul>
-                <div class="d-flex gap-2">
-                    <a href="/profile-info">
-                        <button class="font-blatant btn btn-signup px-4">PROFILE</button>
-                    </a>
+                <div class="d-flex align-items-center gap-2 nav-actions">
+                    <a class="btn btn-brand btn-sm" href="{{ url_for('views.tracking') }}"><i class="bx bx-plus me-1"></i>Start workout</a>
+                    <div class="dropdown">
+                        <button class="profile-trigger" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Open profile menu">
+                            {{ user.first_name[:1].upper() }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end app-dropdown">
+                            <li class="px-3 py-2"><span class="small text-muted d-block">Signed in as</span><strong>{{ user.username }}</strong></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('views.profile_info') }}"><i class="bx bx-user me-2"></i>Profile & settings</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('views.faq') }}"><i class="bx bx-help-circle me-2"></i>Help</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="{{ url_for('auth.logout') }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button class="dropdown-item text-danger" type="submit"><i class="bx bx-log-out me-2"></i>Log out</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
                 {% else %}
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0"></ul>
-                <div class="d-flex gap-2">
-                    <a href="/login">
-                        <button class="font-blatant btn btn-login px-4">LOG IN</button>
-                    </a>
-                    <a href="/signup">
-                        <button class="font-blatant btn btn-signup px-4">SIGN UP</button>
-                    </a>
-                </div>
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('views.faq') }}">How it works</a></li>
+                    <li class="nav-item"><a class="btn btn-quiet" href="{{ url_for('auth.login') }}">Log in</a></li>
+                    <li class="nav-item"><a class="btn btn-brand" href="{{ url_for('auth.signup') }}">Create account</a></li>
+                </ul>
                 {% endif %}
             </div>
         </div>
-</nav>
+    </nav>
 
-    <div class="container mt-3">
-        {% for category, message in get_flashed_messages(with_categories=true) %}
-            <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="container-xl flash-stack" aria-live="polite">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show app-alert" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Dismiss"></button>
+        </div>
         {% endfor %}
     </div>
+    {% endif %}
+    {% endwith %}
 
+    <main id="main-content">{% block content %}{% endblock %}</main>
 
-    {% block content %}
-
-    {% endblock %}
-
-    <script
-        src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"
-        integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB"
-        crossorigin="anonymous"
-        ></script>
-    <script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"
-        integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
-        crossorigin="anonymous"
-        ></script>
-    <script src="../static/js/functionality.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='js/functionality.js') }}"></script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

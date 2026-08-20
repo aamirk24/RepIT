@@ -1,73 +1,10 @@
 {% extends "base.html" %}
-{% block stylesheet %}
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link href="{{ url_for('static', filename='css/create_workout.css') }}" rel="stylesheet" type="text/css">
-{% endblock %}
-{% block css %}
-.exercise-option{
-    text-transform: capitalize;
-}
-{% endblock %}
+{% block title %}{{ 'Edit ' ~ workout.name if workout else 'New routine' }}{% endblock %}
+{% block stylesheet %}<script src="{{ url_for('static', filename='js/exercise_frames.js') }}" defer></script><script src="{{ url_for('static', filename='js/routine_builder.js') }}" defer></script>{% endblock %}
 {% block content %}
-    <div class="container mt-4">
-        <h2>Create a New Workout</h2>
-        <form method="POST">
-            {{ form.hidden_tag() }}
-
-            <div class="form-group my-4 mb-3">
-                {{ form.name.label(class="form-label").title() }}
-                {{ form.name(class="form-control") }}
-                {% if form.name.errors %}
-                    <div class="text-danger">
-                        {% for error in form.name.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group mb-3">
-                {{ form.description.label(class="form-label").title() }}
-                {{ form.description(class="form-control") }}
-            </div>
-
-            <div class="form-group mb-3">
-                {{ form.exercises.label(class="form-label").title() }}
-                {{ form.exercises(class="form-control select2-multiple", multiple=true) }}
-            </div>
-
-            {{ form.submit(class="btn btn-primary") }}
-        </form>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-    <script nonce="{{ g.csp_nonce }}">
-        $(document).ready(function() {
-            $('.select2-multiple').select2({
-                placeholder: 'Select exercises',
-                allowClear: true,
-                width: '100%',
-                templateResult: formatExercise,
-                templateSelection: formatExerciseSelection
-            });
-        });
-
-        // Optional: Custom formatting function to show more exercise details
-        function formatExercise(exercise) {
-            if (!exercise.id) { return exercise.text; }
-            var $exercise = $(
-                '<div class="exercise-option">' +
-                    exercise.text  +
-                '</div>'
-            );
-            return $exercise;
-        }
-
-        function formatExerciseSelection(exercise) {
-            return exercise.text;
-        }
-    </script>
+<div class="container-xl app-shell"><header class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4"><div><p class="page-kicker">{{ 'Routine details' if workout else 'Routine builder' }}</p><h1 class="page-title">{{ 'Edit your routine' if workout else 'Plan your next session' }}</h1><p class="page-copy">{{ 'Review the plan, update its details, or change the exercise selection.' if workout else 'Give the routine a clear name, then search and add exercises in the order you want to train them.' }}</p></div>{% if workout %}<a class="btn btn-outline-brand" href="{{ url_for('views.tracking', routine_id=workout.id) }}"><i class="bx bx-play me-1"></i>Start routine</a>{% endif %}</header>
+<form method="POST" id="routine-builder" data-exercise-api="{{ url_for('views.get_all_exercises') }}">{{ form.hidden_tag() }}<script id="selected-exercises-data" type="application/json" nonce="{{ g.csp_nonce }}">{{ selected_exercises|tojson }}</script>
+<div class="row g-4"><div class="col-lg-8"><section class="app-card mb-4" aria-labelledby="details-heading"><h2 id="details-heading" class="section-title mb-3">Routine details</h2><div class="row g-3"><div class="col-md-5">{{ form.name.label(class="form-label") }}{{ form.name(class="form-control", placeholder="e.g. Upper body strength") }}{% for error in form.name.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}</div><div class="col-md-7">{{ form.description.label(class="form-label") }}{{ form.description(class="form-control", placeholder="Optional goal or training notes") }}{% for error in form.description.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}</div></div></section>
+<section aria-labelledby="find-heading"><div class="d-flex justify-content-between align-items-end mb-3"><div><p class="page-kicker mb-1">Exercise catalogue</p><h2 id="find-heading" class="section-title mb-0">Find exercises</h2></div><span id="builder-result-count" class="small text-muted"></span></div><div class="input-icon-wrap mb-3"><i class="bx bx-search"></i><input id="builder-search" type="search" class="form-control" placeholder="Search exercises by name" autocomplete="off"></div><div id="builder-results" class="exercise-picker-grid" aria-live="polite"></div><div class="text-center mt-3"><button id="load-more-exercises" class="btn btn-outline-brand" type="button">Load more</button></div></section></div>
+<aside class="col-lg-4"><div class="app-card routine-selection-panel"><div class="d-flex justify-content-between align-items-center"><div><p class="page-kicker mb-1">Your routine</p><h2 class="section-title mb-0">Selected exercises</h2></div><span id="selected-count" class="pill">0</span></div>{% for error in form.exercises.errors %}<div class="text-danger small mt-2">{{ error }}</div>{% endfor %}<div id="selected-exercises" class="d-grid gap-2 my-3"></div><div id="selected-empty" class="empty-state py-4"><span class="empty-icon"><i class="bx bx-plus"></i></span><p class="small text-muted mb-0">Add at least one exercise to save this routine.</p></div>{{ form.submit(class="btn btn-brand w-100", value="Update routine" if workout else "Save routine") }}{% if workout %}<button class="btn btn-delete w-100 mt-2" type="button" data-delete-workout-id="{{ workout.id }}" data-delete-redirect="{{ url_for('views.dashboard') }}">Delete routine</button>{% endif %}</div></aside></div></form></div>
 {% endblock %}

@@ -59,6 +59,8 @@ def dashboard():
     ).all()
     for session in sessions:
         session.total_sets = sum(len(item.sets) for item in session.session_exercises)
+        session.total_reps = sum(record.reps for item in session.session_exercises for record in item.sets)
+        session.duration_minutes = max(0, round((session.end_time - session.start_time).total_seconds() / 60))
     return render_template(
         "dashboard.html",
         user=current_user,
@@ -72,13 +74,75 @@ def dashboard():
     )
 
 
+@views.route("/history/<int:session_id>")
+@login_required
+def workout_history_detail(session_id):
+    session = owned_session(current_user.id, session_id)
+    if session.end_time is None:
+        return redirect(url_for("views.tracking"))
+    total_sets = sum(len(item.sets) for item in session.session_exercises)
+    total_reps = sum(record.reps for item in session.session_exercises for record in item.sets)
+    volume_kg = sum(
+        record.reps * record.weight
+        for item in session.session_exercises
+        for record in item.sets
+        if record.weight is not None
+    )
+    duration_minutes = round((session.end_time - session.start_time).total_seconds() / 60)
+    return render_template(
+        "workout_history_detail.html",
+        user=current_user,
+        session=session,
+        total_sets=total_sets,
+        total_reps=total_reps,
+        volume=display_weight(volume_kg, current_user.unit_system),
+        weight_unit=weight_unit(current_user.unit_system),
+        unit_system=current_user.unit_system,
+        display_weight=display_weight,
+        duration_minutes=duration_minutes,
+    )
+
+
 @views.route("/exercise")
 @login_required
 def exercise_library():
-    exercises = db.session.scalars(
-        db.select(Exercise).where(Exercise.is_active.is_(True)).order_by(Exercise.name)
-    ).all()
-    return render_template("exercise.html", exercises=exercises, user=current_user)
+    page = max(request.args.get("page", 1, type=int), 1)
+    query = db.select(Exercise).where(Exercise.is_active.is_(True))
+    search = request.args.get("q", "").strip()
+    if search:
+        query = query.where(Exercise.name.ilike(f"%{search}%"))
+    for field in ("body_part", "equipment", "difficulty"):
+        value = request.args.get(field, "").strip().lower()
+        if value:
+            query = query.where(getattr(Exercise, field) == value)
+    pagination = db.paginate(query.order_by(Exercise.name), page=page, per_page=24, error_out=False)
+    facets = {}
+    for field in ("body_part", "equipment", "difficulty"):
+        facets[field] = db.session.scalars(
+            db.select(getattr(Exercise, field))
+            .where(Exercise.is_active.is_(True))
+            .distinct()
+            .order_by(getattr(Exercise, field))
+        ).all()
+    return render_template(
+        "exercise.html",
+        exercises=pagination.items,
+        pagination=pagination,
+        facets=facets,
+        filters=request.args,
+        user=current_user,
+    )
+
+
+@views.route("/exercise/<int:exercise_id>")
+@login_required
+def exercise_detail(exercise_id):
+    exercise = db.session.scalar(
+        db.select(Exercise).where(Exercise.id == exercise_id, Exercise.is_active.is_(True))
+    )
+    if exercise is None:
+        abort(404)
+    return render_template("exercise_detail.html", exercise=exercise, user=current_user)
 
 
 @views.route("/exercises")
@@ -136,17 +200,84 @@ def create_workout():
         ).all()
         if len(selected) != len(set(form.exercises.data)):
             abort(400)
+        selected_by_id = {item.id: item for item in selected}
         workout = Workout(
             name=form.name.data.strip(),
             description=form.description.data.strip() if form.description.data else None,
             creator=current_user,
-            exercises=list(selected),
+            exercises=[selected_by_id[exercise_id] for exercise_id in form.exercises.data],
         )
         db.session.add(workout)
         db.session.commit()
         flash("Routine created.", "success")
         return redirect(url_for("views.dashboard"))
-    return render_template("create_workout.html", form=form, user=current_user)
+    exercises_by_id = {item.id: item for item in exercises}
+    selected_exercises = [
+        exercises_by_id[exercise_id]
+        for exercise_id in (form.exercises.data or [])
+        if exercise_id in exercises_by_id
+    ]
+    return render_template(
+        "create_workout.html",
+        form=form,
+        user=current_user,
+        workout=None,
+        selected_exercises=[
+            {
+                "id": item.id,
+                "name": item.name,
+                "target": item.target,
+                "equipment": item.equipment,
+                "imageUrls": item.image_urls,
+            }
+            for item in selected_exercises
+        ],
+    )
+
+
+@views.route("/routine/<int:workout_id>", methods=["GET", "POST"])
+@login_required
+def edit_workout(workout_id):
+    workout = db.session.scalar(
+        db.select(Workout).where(Workout.id == workout_id, Workout.creator_id == current_user.id)
+    )
+    if workout is None:
+        abort(404)
+    form = WorkoutForm()
+    exercises = db.session.scalars(
+        db.select(Exercise).where(Exercise.is_active.is_(True)).order_by(Exercise.name)
+    ).all()
+    form.exercises.choices = [(item.id, item.name) for item in exercises]
+    if request.method == "GET":
+        form.name.data = workout.name
+        form.description.data = workout.description
+        form.exercises.data = [item.id for item in workout.exercises]
+    if form.validate_on_submit():
+        exercises_by_id = {item.id: item for item in exercises}
+        if any(exercise_id not in exercises_by_id for exercise_id in form.exercises.data):
+            abort(400)
+        workout.name = form.name.data.strip()
+        workout.description = form.description.data.strip() if form.description.data else None
+        workout.exercises = [exercises_by_id[exercise_id] for exercise_id in form.exercises.data]
+        db.session.commit()
+        flash("Routine updated.", "success")
+        return redirect(url_for("views.edit_workout", workout_id=workout.id))
+    exercises_by_id = {item.id: item for item in exercises}
+    selected_exercises = [
+        exercises_by_id[exercise_id]
+        for exercise_id in (form.exercises.data or [])
+        if exercise_id in exercises_by_id
+    ]
+    return render_template(
+        "create_workout.html",
+        form=form,
+        user=current_user,
+        workout=workout,
+        selected_exercises=[
+            {"id": item.id, "name": item.name, "target": item.target, "equipment": item.equipment, "imageUrls": item.image_urls}
+            for item in selected_exercises
+        ],
+    )
 
 
 @views.route("/delete_workout", methods=["POST"])
@@ -200,6 +331,13 @@ def progress():
     range_days = request.args.get("range", 90, type=int)
     exercise_id = request.args.get("exercise_id", type=int)
     report = progress_report(current_user.id, current_user.unit_system, range_days, exercise_id)
+    exercise_name = request.args.get("exercise", "").strip().casefold()
+    if exercise_name and report["records"]:
+        match = next((item for item in report["records"] if item["name"].casefold() == exercise_name), None)
+        if match is None:
+            match = next((item for item in report["records"] if exercise_name in item["name"].casefold()), None)
+        if match and match["exerciseId"] != exercise_id:
+            report = progress_report(current_user.id, current_user.unit_system, range_days, match["exerciseId"])
     return render_template("progress.html", user=current_user, report=report)
 
 
@@ -209,9 +347,6 @@ def tracking():
     workouts = db.session.scalars(
         db.select(Workout).where(Workout.creator_id == current_user.id).order_by(Workout.name)
     ).all()
-    exercises = db.session.scalars(
-        db.select(Exercise).where(Exercise.is_active.is_(True)).order_by(Exercise.name)
-    ).all()
     routine_id = request.args.get("routine_id", type=int)
     if routine_id and not any(item.id == routine_id for item in workouts):
         abort(404)
@@ -220,7 +355,6 @@ def tracking():
         "tracking.html",
         user=current_user,
         workouts=workouts,
-        exercises=exercises,
         requested_routine_id=routine_id,
         active_session_payload=session_payload(active_session, current_user.unit_system) if active_session else None,
         weight_unit=weight_unit(current_user.unit_system),

@@ -2,7 +2,7 @@
 
 RepIT is a Flask fitness tracker for creating reusable routines, logging workout sessions and sets, browsing an exercise library, and charting body measurements.
 
-This repository is currently in **Stage 4 progress and analytics development**. The original PythonAnywhere deployment and paid ExerciseDB integration are not active. RepIT uses a pinned public-domain snapshot of Free Exercise DB and makes no provider API requests at startup.
+This repository is currently in **Stage 5 product UI development**. The original PythonAnywhere deployment and paid ExerciseDB integration are not active. RepIT uses a pinned public-domain snapshot of Free Exercise DB and makes no provider API requests at startup.
 
 ## Local setup
 

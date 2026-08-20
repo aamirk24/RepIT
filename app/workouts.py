@@ -247,6 +247,7 @@ def session_payload(session, unit_system="metric"):
                 "target": item.target_name,
                 "equipment": item.equipment_name,
                 "imageUrl": item.exercise.image_url,
+                "imageUrls": item.exercise.image_urls,
                 "order": item.order,
                 "sets": [
                     {
