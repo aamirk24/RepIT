@@ -41,12 +41,12 @@ def handle_workout_error(error):
     return jsonify(success=False, error=str(error)), error.status_code
 
 
-@views.route("/landing")
+@views.route("/")
 def landing():
     return render_template("landing.html", user=current_user)
 
 
-@views.route("/")
+@views.route("/dashboard")
 @login_required
 def dashboard():
     workouts = db.session.scalars(

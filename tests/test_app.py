@@ -49,7 +49,7 @@ class RepITTestCase(unittest.TestCase):
         )
 
     def test_app_starts_without_network_or_api_key(self):
-        response = self.client.get("/landing")
+        response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
         with self.app.app_context():
             self.assertEqual(db.session.scalar(db.select(db.func.count(Exercise.id))), self.catalogue_size)
@@ -186,7 +186,7 @@ class RepITTestCase(unittest.TestCase):
         self.assertEqual(response.headers["X-Request-ID"], "render-check-123")
         self.assertEqual(response.headers["Cache-Control"], "no-store")
 
-        response = self.client.get("/landing", headers={"X-Request-ID": "invalid request id"})
+        response = self.client.get("/", headers={"X-Request-ID": "invalid request id"})
         self.assertRegex(response.headers["X-Request-ID"], r"^[a-f0-9]{32}$")
         self.assertEqual(response.headers["Cache-Control"], "no-store")
 
@@ -242,13 +242,13 @@ class RepITTestCase(unittest.TestCase):
                 create_app(environment="production")
 
     def test_signup_login_logout_and_protected_route(self):
-        self.assertEqual(self.client.get("/").status_code, 302)
+        self.assertEqual(self.client.get("/dashboard").status_code, 302)
         response = self.signup()
         self.assertIn(b"Welcome Back", response.data)
 
     def test_authenticated_pages_render(self):
         self.signup()
-        for path in ("/", "/exercise", "/create_workout", "/tracking", "/progress", "/profile-info", "/measurements", "/account", "/faq"):
+        for path in ("/dashboard", "/exercise", "/create_workout", "/tracking", "/progress", "/profile-info", "/measurements", "/account", "/faq"):
             with self.subTest(path=path):
                 response = self.client.get(path)
                 self.assertEqual(response.status_code, 200)
@@ -293,7 +293,7 @@ class RepITTestCase(unittest.TestCase):
             data={"email": "user@example.com", "password": self.password},
         )
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.headers["Location"], "/")
+        self.assertEqual(response.headers["Location"], "/dashboard")
 
     def test_remember_me_is_explicit(self):
         self.signup()
@@ -318,7 +318,7 @@ class RepITTestCase(unittest.TestCase):
             follow_redirects=True,
         )
         self.assertIn(b"Password changed", response.data)
-        self.assertEqual(self.client.get("/").status_code, 302)
+        self.assertEqual(self.client.get("/dashboard").status_code, 302)
         old_login = self.client.post("/login", data={"email": "user@example.com", "password": self.password})
         self.assertIn(b"Invalid email or password", old_login.data)
         new_login = self.client.post(
@@ -342,7 +342,7 @@ class RepITTestCase(unittest.TestCase):
             self.assertEqual(db.session.scalar(db.select(db.func.count(User.id))), 0)
 
     def test_security_headers_are_present(self):
-        response = self.client.get("/landing")
+        response = self.client.get("/")
         self.assertEqual(response.headers["X-Content-Type-Options"], "nosniff")
         self.assertEqual(response.headers["X-Frame-Options"], "DENY")
         self.assertIn("default-src 'self'", response.headers["Content-Security-Policy"])
@@ -602,6 +602,8 @@ class RepITTestCase(unittest.TestCase):
         self.assertIn(b"Historical Exercise Name", response.data)
         self.assertIn(b"Estimated 1RM trend", response.data)
         self.assertIn(b"View accessible weekly data table", response.data)
+        self.assertIn(b"1 week", response.data)
+        self.assertNotIn(b"1 weeks", response.data)
 
     def test_progress_is_scoped_to_the_authenticated_user(self):
         self.signup("owner@example.com", "owner")

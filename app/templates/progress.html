@@ -20,7 +20,7 @@
     <div class="row g-4">
         <div class="col-xl-5">
             <section class="app-card analytics-panel h-100" aria-labelledby="consistency-heading">
-                <div class="d-flex justify-content-between align-items-start gap-3"><div><p class="page-kicker mb-1">Training rhythm</p><h2 id="consistency-heading" class="section-title">12-week consistency</h2></div><span class="streak-pill"><i class="bx bx-trending-up"></i>{{ report.streakWeeks }} weeks</span></div>
+                <div class="d-flex justify-content-between align-items-start gap-3"><div><p class="page-kicker mb-1">Training rhythm</p><h2 id="consistency-heading" class="section-title">12-week consistency</h2></div><span class="streak-pill"><i class="bx bx-trending-up"></i>{{ report.streakWeeks }} {{ 'week' if report.streakWeeks == 1 else 'weeks' }}</span></div>
                 <p class="small text-muted">Workouts and weighted volume by calendar week.</p>
                 {% set max_workouts = report.weekly|map(attribute='workouts')|max %}{% if max_workouts < 1 %}{% set max_workouts = 1 %}{% endif %}
                 {% set max_volume = report.weekly|map(attribute='volume')|max %}{% if max_volume < 1 %}{% set max_volume = 1 %}{% endif %}
