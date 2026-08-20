@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from pathlib import Path
 
 
@@ -18,6 +19,11 @@ class BaseConfig:
     SESSION_COOKIE_SAMESITE = "Lax"
     REMEMBER_COOKIE_HTTPONLY = True
     REMEMBER_COOKIE_SAMESITE = "Lax"
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=12)
+    REMEMBER_COOKIE_DURATION = timedelta(days=30)
+    LOGIN_MAX_ATTEMPTS = 5
+    LOGIN_WINDOW = timedelta(minutes=15)
+    LOGIN_BLOCK_DURATION = timedelta(minutes=15)
     MAX_CONTENT_LENGTH = 2 * 1024 * 1024
     JSON_SORT_KEYS = False
 
@@ -44,6 +50,7 @@ class ProductionConfig(BaseConfig):
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
     PREFERRED_URL_SCHEME = "https"
+    SESSION_REFRESH_EACH_REQUEST = False
 
     @staticmethod
     def validate(instance_path):

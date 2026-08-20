@@ -3,9 +3,10 @@ from datetime import datetime, timezone
 from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, logout_user
 from sqlalchemy import func
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from . import db
-from .forms import HeightForm, UpdateForm, WeightForm, WorkoutForm
+from .forms import ChangePasswordForm, DeleteAccountForm, HeightForm, UpdateForm, WeightForm, WorkoutForm
 from .models import Exercise, ExerciseSet, Height, SessionExercise, User, Weight, Workout, WorkoutSession
 
 
@@ -90,6 +91,9 @@ def get_all_exercises():
                 "secondaryMuscles": item.secondary_muscles,
                 "instructions": item.instructions,
                 "gifUrl": item.image_url,
+                "imageUrls": item.image_urls,
+                "source": item.source,
+                "attribution": item.attribution_text,
             }
             for item in result.items
         ],
@@ -330,12 +334,53 @@ def delete_session():
 @views.route("/account")
 @login_required
 def account():
-    return render_template("account.html", user=current_user)
+    return render_template(
+        "account.html",
+        user=current_user,
+        password_form=ChangePasswordForm(),
+        delete_form=DeleteAccountForm(),
+    )
+
+
+@views.route("/change-password", methods=["POST"])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if not form.validate_on_submit():
+        flash("Please correct the password form and try again.", "danger")
+        return render_template(
+            "account.html", user=current_user, password_form=form, delete_form=DeleteAccountForm()
+        ), 400
+    if not check_password_hash(current_user.password, form.current_password.data):
+        form.current_password.errors.append("Current password is incorrect.")
+        return render_template(
+            "account.html", user=current_user, password_form=form, delete_form=DeleteAccountForm()
+        ), 400
+    if check_password_hash(current_user.password, form.new_password.data):
+        form.new_password.errors.append("New password must be different from the current password.")
+        return render_template(
+            "account.html", user=current_user, password_form=form, delete_form=DeleteAccountForm()
+        ), 400
+    current_user.password = generate_password_hash(form.new_password.data)
+    current_user.password_changed_at = datetime.now(timezone.utc)
+    current_user.session_version += 1
+    db.session.commit()
+    logout_user()
+    flash("Password changed. Please log in again on this and any other device.", "success")
+    return redirect(url_for("auth.login"))
 
 
 @views.route("/delete_account", methods=["POST"])
 @login_required
 def delete_account():
+    form = DeleteAccountForm()
+    if not form.validate_on_submit() or not check_password_hash(current_user.password, form.current_password.data):
+        if not form.current_password.errors:
+            form.current_password.errors.append("Current password is incorrect.")
+        flash("Account deletion was not confirmed.", "danger")
+        return render_template(
+            "account.html", user=current_user, password_form=ChangePasswordForm(), delete_form=form
+        ), 400
     user = current_user._get_current_object()
     logout_user()
     db.session.delete(user)

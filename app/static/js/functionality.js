@@ -1,4 +1,4 @@
-function deleteWorkout(url, workoutId, button, event){
+function deleteWorkout(workoutId, event){
     event.stopPropagation();
 
     fetch('/delete_workout',{
@@ -13,7 +13,7 @@ function deleteWorkout(url, workoutId, button, event){
     });
 }
 
-function deleteSession(url, sessionId, button, event){
+function deleteSession(sessionId, event){
     event.stopPropagation();
 
     fetch('/delete_session',{
@@ -326,7 +326,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                console.log("Workout session discarded successfully.");
                 activeWorkoutSession = null;
             } else {
                 console.error("Failed to discard workout session.");
@@ -342,7 +341,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitWorkoutNameBtn = document.getElementById('submit-workout-name-btn');
 
     endWorkoutBtn.addEventListener('click', function() {
-        console.log('End workout button clicked');
         clearInterval(timerInterval);
 
         // Collect all exercises and their sets
@@ -362,8 +360,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return { exerciseId, exerciseName, sets };
         });
 
-        console.log('Session exercises:', sessionExercises);
-
         // Reset input and show modal
         workoutNameInput.value = 'Custom Workout';
         workoutNameModal.show();
@@ -373,10 +369,7 @@ document.addEventListener('DOMContentLoaded', function() {
         submitWorkoutNameBtn.addEventListener('click', handleWorkoutNameSubmission);
 
         function handleWorkoutNameSubmission() {
-            console.log('Submit workout name button clicked');
             const workoutName = workoutNameInput.value.trim();
-            console.log('Workout name:', workoutName);
-            console.log('Active workout session:', activeWorkoutSession);
 
             // End the workout session
             fetch('/end_workout_session', {
@@ -392,12 +385,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     workout_name: workoutName
                 })
             })
-            .then(response => {
-                console.log('Response status:', response.status);
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                console.log('Server response:', data);
                 if (data.success || data.status === 'success') {
                     inactiveWorkoutDiv.classList.remove('d-none');
                     activeWorkoutDiv.classList.add('d-none');

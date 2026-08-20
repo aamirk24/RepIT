@@ -1,5 +1,25 @@
 {% extends "base.html" %}
 {% block title %} Exercises {% endblock %}
+{% block stylesheet %}
+<link href="../static/css/exercise.css" rel="stylesheet" type="text/css">
+<script src="{{ url_for('static', filename='js/exercise_frames.js') }}" defer></script>
+{% endblock %}
+{% macro exercise_demo(exercise, modifier="") %}
+    {% if exercise.image_urls %}
+    <div class="exercise-demo {{ modifier }}">
+        <img
+            src="{{ exercise.image_urls[0] }}"
+            class="exercise-demo-image"
+            alt="Demonstration of {{ exercise.name }}"
+            loading="lazy"
+            data-frame-one="{{ exercise.image_urls[0] }}"
+            {% if exercise.image_urls|length > 1 %}data-frame-two="{{ exercise.image_urls[1] }}"{% endif %}
+            data-frame-index="0">
+    </div>
+    {% elif exercise.gifUrl %}
+    <img src="{{ exercise.gifUrl }}" class="card-img-top" alt="Demonstration of {{ exercise.name }}" loading="lazy">
+    {% endif %}
+{% endmacro %}
 {% block content %}
 <div class="container">
     <h2 class="font-blatant display-5 text-center my-4 mb-2">Exercise Library</h2>
@@ -16,7 +36,7 @@
             data-name="{{ exercise.name.lower() }}"
             data-target="{{ exercise.target.lower() }} {{ exercise.body_part.lower() }} {{ exercise.equipment.lower() }} {{ exercise.category.lower() }}">
             <div class="card" data-bs-toggle="modal" data-bs-target="#exerciseModal{{ exercise.id }}">
-                {% if exercise.gifUrl %}<img src="{{ exercise.gifUrl }}" class="card-img-top" alt="{{ exercise.name }}">{% endif %}
+                {{ exercise_demo(exercise) }}
                 <div class="card-body">
                     <h5 class="card-title">{{ exercise.name.title() }}</h5>
                     <p class="card-text">
@@ -46,6 +66,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
+                            {{ exercise_demo(exercise, "exercise-demo-modal mb-3") }}
                             <div class="card mb-3">
                                 <div class="card-body">
                                     <p><strong>{{ exercise.description }}</strong></p>
@@ -68,7 +89,7 @@
                                 </div>
                             </div>
                             {% if exercise.has_attribution %}
-                            <p class="small text-muted">{{ exercise.attribution_text }}</p>
+                            <p class="small text-muted">{{ exercise.attribution_text }}{% if exercise.source_url %} <a href="{{ exercise.source_url }}" target="_blank" rel="noopener noreferrer">Source</a>{% endif %}</p>
                             {% endif %}
                             <div class="card mb-3">
                                 <div class="card-body">

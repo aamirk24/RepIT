@@ -2,7 +2,7 @@
 
 RepIT is a Flask fitness tracker for creating reusable routines, logging workout sessions and sets, browsing an exercise library, and charting body measurements.
 
-This repository is currently in **Stage 1 production-foundation development**. The original PythonAnywhere deployment and ExerciseDB integration are not active. Until a replacement provider and its usage terms are approved, RepIT uses a small deterministic fallback catalogue and makes no network requests at startup.
+This repository is currently in **Stage 2 authentication and account-security development**. The original PythonAnywhere deployment and paid ExerciseDB integration are not active. RepIT uses a pinned public-domain snapshot of Free Exercise DB and makes no provider API requests at startup.
 
 ## Local setup
 
@@ -41,6 +41,12 @@ DATABASE_URL=postgresql://user:password@host:5432/repit
 
 Never commit real environment values.
 
+## Account security
+
+RepIT uses CSRF protection, secure password hashing, generic login failures, persistent login throttling, explicit remember-me sessions, password-confirmed account deletion, and global session invalidation after a password change. Production responses add HTTPS-only cookies, HSTS, a content security policy, and defensive browser headers.
+
+See [ROADMAP.md](ROADMAP.md) for planned product stages and integrations intentionally deferred until their external prerequisites are chosen.
+
 ## Tests
 
 ```bash
@@ -60,13 +66,15 @@ python -m unittest discover -s tests -v
 
 ## Exercise catalogue
 
-RepIT is designed to consume a licensed external exercise provider rather than maintain a complete proprietary dataset. Its provider contract maps external records into a normalized local `Exercise` model, keeping the rest of the application independent from any one API. Routines and completed sessions reference these normalized records, so provider outages do not corrupt workout history.
+RepIT consumes externally maintained exercise data rather than maintaining a proprietary catalogue. Its provider contract maps source records into a normalized local `Exercise` model, keeping routines, workout sessions, search, and analytics independent from the upstream format.
 
-The current provider is a temporary bundled fallback containing 52 development records across strength, cardio, stability, mobility, and stretching. It will be replaced after a provider's commercial-use, caching, GIF-embedding, attribution, and post-cancellation terms are confirmed.
+The current provider is [Free Exercise DB](https://github.com/yuhonas/free-exercise-db), an open dataset released under The Unlicense/public-domain dedication. RepIT vendors a checksum-verified snapshot pinned to an exact upstream commit. It currently contains 873 exercises with instructions, difficulty, category, equipment, muscle metadata, and two demonstration images per exercise.
 
-The seed command is an idempotent provider synchronization operation: it adds missing records and updates changed content without duplicating exercises or deleting records belonging to another source. Every record retains a provider identifier, source, version, attribution, and optional licence metadata. Automated tests can supply an in-memory provider without making paid API requests.
+The seed command is an idempotent provider synchronization operation: it adds missing records, updates changed content, and deactivates removed upstream records without breaking historical workout references. Exact-name scaffold records are re-homed in place so their database IDs and relationships survive. Unreferenced handcrafted scaffold rows are removed; referenced legacy rows remain inactive only where required to preserve user data.
 
-The previous coursework version used ExerciseDB through RapidAPI. RepIT does not bundle, cache, or request that provider's data. A future adapter may retrieve metadata and GIF URLs only within its provider's confirmed terms; API credentials will remain server-side and outside Git.
+Exercise images are loaded from commit-pinned upstream URLs and lazy-loaded by the browser. The combined metadata snapshot and its upstream licence are stored under `data/free-exercise-db/`; update provenance and checksum details are documented in `SNAPSHOT.md`. RepIT has no exercise API key, paid catalogue dependency, or runtime catalogue quota.
+
+See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for source and licence details.
 
 ## Health check
 

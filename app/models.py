@@ -23,22 +23,35 @@ class User(db.Model, UserMixin):
     city = db.Column(db.String(150))
     county = db.Column(db.String(150))
     country = db.Column(db.String(150))
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    password_changed_at = db.Column(db.DateTime(timezone=True))
+    session_version = db.Column(db.Integer, nullable=False, default=1)
 
     workouts = db.relationship("Workout", back_populates="creator", cascade="all, delete-orphan")
     workout_sessions = db.relationship("WorkoutSession", back_populates="user", cascade="all, delete-orphan")
     heights = db.relationship("Height", back_populates="user", cascade="all, delete-orphan")
     weights = db.relationship("Weight", back_populates="user", cascade="all, delete-orphan")
 
+    def get_id(self):
+        return f"{self.id}:{self.session_version}"
+
+
+class LoginThrottle(db.Model):
+    key_hash = db.Column(db.String(64), primary_key=True)
+    failed_attempts = db.Column(db.Integer, nullable=False, default=0)
+    window_started_at = db.Column(db.DateTime(timezone=True), nullable=False)
+    blocked_until = db.Column(db.DateTime(timezone=True))
+
 
 class Exercise(db.Model):
     __table_args__ = (
         db.UniqueConstraint("source", "source_identifier", name="uq_exercise_source_identifier"),
         db.CheckConstraint(
-            "difficulty IN ('beginner', 'intermediate', 'advanced')",
+            "difficulty IN ('beginner', 'intermediate', 'advanced', 'expert')",
             name="ck_exercise_difficulty",
         ),
         db.CheckConstraint(
-            "category IN ('strength', 'cardio', 'mobility', 'balance', 'stretching', 'plyometrics', 'rehabilitation', 'stability')",
+            "category IN ('strength', 'cardio', 'mobility', 'balance', 'stretching', 'plyometrics', 'rehabilitation', 'stability', 'powerlifting', 'olympic weightlifting', 'strongman')",
             name="ck_exercise_category",
         ),
     )
@@ -55,6 +68,7 @@ class Exercise(db.Model):
     secondary_muscles = db.Column(db.JSON, nullable=False, default=list)
     instructions = db.Column(db.JSON, nullable=False, default=list)
     image_url = db.Column(db.String(1000))
+    image_urls = db.Column(db.JSON, nullable=False, default=list)
     source = db.Column(db.String(100), nullable=False, default="RepIT")
     source_identifier = db.Column(db.String(180), nullable=False)
     source_url = db.Column(db.String(1000))

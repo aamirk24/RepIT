@@ -28,7 +28,7 @@
                                                         {{ workout.name }}
                                                     </h6>
                                                     <button type="button" class="btn btn-sm btn-delete-plan"
-                                                            onclick="deleteWorkout('{{ url_for('views.delete_workout') }}', '{{ workout.id }}', this, event)">
+                                                            onclick="deleteWorkout('{{ workout.id }}', event)">
                                                         <i class='bx bxs-trash'></i>
                                                     </button>
                                                 </div>

@@ -181,7 +181,7 @@
 
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
+    <script nonce="{{ g.csp_nonce }}">
     document.addEventListener('DOMContentLoaded', function() {
         // Height Chart
         var heightCtx = document.getElementById('heightChart').getContext('2d');

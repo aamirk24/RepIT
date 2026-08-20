@@ -1,6 +1,7 @@
 from pathlib import Path
+import secrets
 
-from flask import Flask
+from flask import Flask, g
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -51,7 +52,14 @@ def create_app(test_config=None, environment=None):
 
     @login_manager.user_loader
     def load_user(user_id):
-        return db.session.get(User, int(user_id))
+        try:
+            raw_id, raw_version = user_id.split(":", 1)
+            user = db.session.get(User, int(raw_id))
+            if user and user.session_version == int(raw_version):
+                return user
+        except (AttributeError, TypeError, ValueError):
+            return None
+        return None
 
     from .seed import seed_exercises
 
@@ -59,10 +67,31 @@ def create_app(test_config=None, environment=None):
     def seed_exercises_command():
         """Synchronise the configured exercise catalogue into RepIT."""
         result = seed_exercises()
-        print(f"Exercise catalogue synced: {result.created} added, {result.updated} updated.")
+        print(
+            f"Exercise catalogue synced: {result.created} added, "
+            f"{result.updated} updated, {result.retired} retired."
+        )
 
     @app.get("/health")
     def health():
         return {"status": "ok", "environment": app.config["APP_ENV"]}
+
+    @app.before_request
+    def create_csp_nonce():
+        g.csp_nonce = secrets.token_urlsafe(18)
+
+    @app.after_request
+    def add_security_headers(response):
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+        response.headers.setdefault(
+            "Content-Security-Policy",
+            f"default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://unpkg.com; script-src 'self' 'nonce-{g.csp_nonce}' https://cdn.jsdelivr.net; connect-src 'self'",
+        )
+        if app.config["APP_ENV"] == "production":
+            response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+        return response
 
     return app

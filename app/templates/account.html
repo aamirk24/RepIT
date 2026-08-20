@@ -7,6 +7,33 @@
 {% block heading %}Account{% endblock %}
 {% block content %}
 <div>
+    <section class="mb-5">
+        <h2 class="h4 mt-4">Change password</h2>
+        <p>Changing your password signs you out everywhere, including this device.</p>
+        <form method="POST" action="{{ url_for('views.change_password') }}">
+            {{ password_form.hidden_tag() }}
+            <div class="mb-3">
+                {{ password_form.current_password.label(class="form-label") }}
+                {{ password_form.current_password(class="form-control") }}
+                {% for error in password_form.current_password.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ password_form.new_password.label(class="form-label") }}
+                {{ password_form.new_password(class="form-control") }}
+                {% for error in password_form.new_password.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ password_form.confirm_password.label(class="form-label") }}
+                {{ password_form.confirm_password(class="form-control") }}
+                {% for error in password_form.confirm_password.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+            {{ password_form.submit_password(class="btn btn-signup") }}
+        </form>
+    </section>
+
+    <hr>
+    <section>
+    <h2 class="h4 mt-4">Delete account</h2>
     <p class="mt-4">Deleting your account is instant and permanent. You will not be able to regain access to your account or your fitness data. Please make sure you are ready to permanently delete before proceeding.</p>
     <button type="button" class="btn btn-sm btn-delete" data-bs-toggle="modal" data-bs-target="#deleteModal">
         DELETE YOUR ACCOUNT
@@ -23,16 +50,25 @@
                     Are you sure you want to <strong><u>delete your account</u></strong>?
                 </div>
                 <div class="modal-footer">
-                    <form method="POST" action="{{ url_for('views.delete_account') }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="btn btn-sm btn-delete">
-                           DELETE YOUR ACCOUNT
-                        </button>
+                    <form method="POST" action="{{ url_for('views.delete_account') }}" class="w-100">
+                        {{ delete_form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ delete_form.current_password.label(class="form-label") }}
+                            {{ delete_form.current_password(class="form-control") }}
+                            {% for error in delete_form.current_password.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="form-check mb-3">
+                            {{ delete_form.confirm_deletion(class="form-check-input") }}
+                            {{ delete_form.confirm_deletion.label(class="form-check-label") }}
+                            {% for error in delete_form.confirm_deletion.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                        {{ delete_form.submit_delete(class="btn btn-sm btn-delete") }}
                     </form>
                 </div>
             </div>
         </div>
     </div>
+    </section>
 
 </div>
 {% endblock %}

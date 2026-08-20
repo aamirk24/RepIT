@@ -27,7 +27,7 @@
                                     </p>
                                 </div>
                                 <button type="button" class="btn btn-sm btn-delete"
-                                        onclick="deleteSession('{{ url_for('views.delete_session') }}', '{{ session.id }}', this, event)">
+                                                onclick="deleteSession('{{ session.id }}', event)">
                                     <i class='bx bxs-trash' style="font-size: 18px"></i>
                                 </button>
                             </div>
@@ -130,7 +130,7 @@
                                             {{ workout.name }}
                                         </h6>
                                         <button type="button" class="btn btn-sm btn-delete"
-                                                onclick="deleteWorkout('{{ url_for('views.delete_workout') }}', '{{ workout.id }}', this, event)">
+                                                onclick="deleteWorkout('{{ workout.id }}', event)">
                                             <i class='bx bxs-trash'></i>
                                         </button>
                                     </div>
