@@ -245,6 +245,11 @@ class RepITTestCase(unittest.TestCase):
         self.assertEqual(self.client.get("/dashboard").status_code, 302)
         response = self.signup()
         self.assertIn(b"Welcome Back", response.data)
+        for path in ("/", "/login", "/signup"):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 302)
+                self.assertEqual(response.headers["Location"], "/dashboard")
 
     def test_authenticated_pages_render(self):
         self.signup()
@@ -388,7 +393,10 @@ class RepITTestCase(unittest.TestCase):
             json={"session_id": session_id, "exercise_id": exercise_id, "set_number": 1, "reps": 8, "weight": 60},
         )
         self.assertEqual(response.status_code, 200)
-        self.client.post("/end_workout_session", json={"session_id": session_id, "workout_name": "Push Day"})
+        response = self.client.post(
+            "/end_workout_session", json={"session_id": session_id, "workout_name": "Push Day"}
+        )
+        self.assertEqual(response.get_json()["redirect_url"], "/dashboard")
         with self.app.app_context():
             session = db.session.get(WorkoutSession, session_id)
             self.assertIsNotNone(session.end_time)

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Train{% endblock %}
-{% block stylesheet %}<script src="{{ url_for('static', filename='js/exercise_frames.js') }}" defer></script><script src="{{ url_for('static', filename='js/workout_tracking.js') }}" defer></script>{% endblock %}
+{% block stylesheet %}<script src="{{ url_for('static', filename='js/exercise_frames.js') }}" defer></script><script src="{{ url_for('static', filename='js/workout_tracking.js', v='dashboard-redirect-v1') }}" defer></script>{% endblock %}
 {% block content %}
 <div class="container-xl app-shell" id="tracking-app" data-routine-id="{{ requested_routine_id or '' }}" data-weight-unit="{{ weight_unit }}" data-exercise-api="{{ url_for('views.get_all_exercises') }}"><script id="active-workout-data" type="application/json" nonce="{{ g.csp_nonce }}">{{ active_session_payload|tojson }}</script>
 <header class="mb-4"><p class="page-kicker">Workout logger</p><h1 class="page-title">Train without distractions</h1><p class="page-copy">Your active session stays saved as you go, so you can focus on the work.</p></header>

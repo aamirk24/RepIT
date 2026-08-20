@@ -43,6 +43,8 @@ def handle_workout_error(error):
 
 @views.route("/")
 def landing():
+    if current_user.is_authenticated:
+        return redirect(url_for("views.dashboard"))
     return render_template("landing.html", user=current_user)
 
 
@@ -463,7 +465,12 @@ def end_workout_session():
     data = json_payload()
     session = owned_session(current_user.id, data.get("session_id"), active_only=True)
     complete_workout(session, data.get("workout_name"), data.get("notes"))
-    return jsonify(success=True, status="success", message="Workout saved.")
+    return jsonify(
+        success=True,
+        status="success",
+        message="Workout saved.",
+        redirect_url=url_for("views.dashboard"),
+    )
 
 
 @views.route("/discard_workout_session", methods=["POST"])
