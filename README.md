@@ -2,7 +2,7 @@
 
 RepIT is a Flask fitness tracker for creating reusable routines, logging workout sessions and sets, browsing an exercise library, and charting body measurements.
 
-This repository is currently in **Stage 3 workout lifecycle and data-integrity development**. The original PythonAnywhere deployment and paid ExerciseDB integration are not active. RepIT uses a pinned public-domain snapshot of Free Exercise DB and makes no provider API requests at startup.
+This repository is currently in **Stage 4 progress and analytics development**. The original PythonAnywhere deployment and paid ExerciseDB integration are not active. RepIT uses a pinned public-domain snapshot of Free Exercise DB and makes no provider API requests at startup.
 
 ## Local setup
 
@@ -63,7 +63,16 @@ python -m unittest discover -s tests -v
 - Editable exercise sets with repetitions, weight, rest time, ordering, notes, and server-backed timers
 - Immutable completed sessions and provider-independent exercise snapshots for reliable history
 - Workout history
+- 30/90/365-day progress summaries, comparison periods, 12-week frequency, and training streaks
+- Per-exercise personal records, estimated one-repetition maximum trends, and complete exercise history
+- Metric and imperial display preferences with canonical metric storage
 - Profile and body-measurement tracking
+
+## Analytics definitions
+
+Analytics count completed sessions and completed sets only. Weighted training volume is `external load × repetitions`; bodyweight sets contribute to set and repetition totals but not weighted volume because RepIT does not invent a bodyweight load. Estimated one-repetition maximum uses the Epley formula for weighted sets of 1–12 repetitions. All weights and measurements are stored canonically in kilograms and centimetres, then converted for imperial display.
+
+Exercise history is grouped by RepIT's internal exercise identity and uses the exercise-name, target, and equipment snapshots captured when the workout was performed. Upstream catalogue wording changes therefore do not rewrite historical analytics.
 
 ## Exercise catalogue
 

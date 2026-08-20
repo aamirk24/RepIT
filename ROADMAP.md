@@ -44,13 +44,17 @@ RepIT is being rebuilt in reviewable stages. Exercise metadata comes from a pinn
 - Snapshotted exercise identity fields into workout history so provider catalogue changes cannot rewrite past sessions.
 - Made completed sessions immutable and prevented empty workouts from being completed.
 
-## Planned
-
 ### Stage 4 — Progress and analytics
 
-- Personal records, volume, frequency, exercise history, trends, and dashboard summaries.
-- Unit preferences and accessible data visualizations.
-- Provider-independent analytics keyed to RepIT exercise identities.
+- Added 30, 90, and 365-day summaries for workouts, sets, repetitions, weighted volume, and training time.
+- Added previous-period comparisons, 12-week workout frequency, weekly volume, and consecutive-week streaks.
+- Added per-exercise heaviest-load, estimated 1RM, repetition records, performance trends, and session history.
+- Added metric and imperial preferences while retaining kilograms and centimetres as canonical storage units.
+- Added accessible chart alternatives and semantic analytics tables.
+- Kept analytics user-scoped and provider-independent through RepIT exercise IDs and historical snapshots.
+- Added analytics indexes and regression coverage for calculations, isolation, conversion, and filtering.
+
+## Planned
 
 ### Stage 5 — Product UI, accessibility, and responsive design
 

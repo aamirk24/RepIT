@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from . import db
 from .models import Exercise, ExerciseSet, SessionExercise, Workout, WorkoutSession
+from .units import display_weight, stored_weight, weight_unit
 
 
 class WorkoutError(ValueError):
@@ -150,7 +151,7 @@ def reorder_exercises(session, exercise_ids):
     db.session.commit()
 
 
-def save_set(session, exercise_id, set_number, reps, weight=None, rest_time=None):
+def save_set(session, exercise_id, set_number, reps, weight=None, rest_time=None, unit_system="metric"):
     exercise_id = _integer(exercise_id, "Exercise")
     item = next((item for item in session.session_exercises if item.exercise_id == exercise_id), None)
     if item is None:
@@ -158,7 +159,7 @@ def save_set(session, exercise_id, set_number, reps, weight=None, rest_time=None
     try:
         set_number = int(set_number)
         reps = int(reps)
-        weight = float(weight) if weight not in (None, "") else None
+        weight = stored_weight(float(weight), unit_system) if weight not in (None, "") else None
         rest_time = int(rest_time) if rest_time not in (None, "") else None
     except (TypeError, ValueError):
         raise WorkoutError("Set values must be valid numbers.") from None
@@ -230,13 +231,14 @@ def _utc_iso(value):
     return value.astimezone(timezone.utc).isoformat()
 
 
-def session_payload(session):
+def session_payload(session, unit_system="metric"):
     return {
         "id": session.id,
         "name": session.name,
         "notes": session.notes or "",
         "startTime": _utc_iso(session.start_time),
         "endTime": _utc_iso(session.end_time) if session.end_time else None,
+        "weightUnit": weight_unit(unit_system),
         "exercises": [
             {
                 "id": item.exercise_id,
@@ -251,7 +253,7 @@ def session_payload(session):
                         "id": record.id,
                         "setNumber": record.set_number,
                         "reps": record.reps,
-                        "weight": record.weight,
+                        "weight": display_weight(record.weight, unit_system),
                         "restTime": record.rest_time,
                         "completed": record.is_completed,
                     }

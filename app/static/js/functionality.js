@@ -3,25 +3,36 @@ function getCsrfToken() {
     return token ? token.content : '';
 }
 
-function deleteWorkout(workoutId, event) {
-    event.stopPropagation();
-    fetch('/delete_workout', {
+async function deleteRecord(url, body) {
+    const response = await fetch(url, {
         method: 'POST',
         headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken()},
-        body: JSON.stringify({workoutId})
-    }).then(() => { window.location.href = '/'; });
-}
-
-function deleteSession(sessionId, event) {
-    event.stopPropagation();
-    fetch('/delete_session', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken()},
-        body: JSON.stringify({sessionId})
-    }).then(() => { window.location.href = '/'; });
+        body: JSON.stringify(body)
+    });
+    if (!response.ok) throw new Error('The item could not be deleted.');
+    window.location.reload();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-delete-workout-id]').forEach(button => {
+        button.addEventListener('click', async event => {
+            event.stopPropagation();
+            if (!window.confirm('Delete this routine? Completed workout history will be retained.')) return;
+            try {
+                await deleteRecord('/delete_workout', {workoutId: button.dataset.deleteWorkoutId});
+            } catch (error) { window.alert(error.message); }
+        });
+    });
+    document.querySelectorAll('[data-delete-session-id]').forEach(button => {
+        button.addEventListener('click', async event => {
+            event.stopPropagation();
+            if (!window.confirm('Permanently delete this workout from your history?')) return;
+            try {
+                await deleteRecord('/delete_session', {sessionId: button.dataset.deleteSessionId});
+            } catch (error) { window.alert(error.message); }
+        });
+    });
+
     const searchInput = document.getElementById('exerciseSearch');
     if (!searchInput) return;
     const exerciseCards = document.querySelectorAll('.exercise-card');

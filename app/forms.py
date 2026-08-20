@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 import re
 
-from wtforms import BooleanField, DateField, FloatField, IntegerField, PasswordField, SelectField, SelectMultipleField, StringField, SubmitField
+from wtforms import BooleanField, DateField, FloatField, PasswordField, SelectField, SelectMultipleField, StringField, SubmitField
 from wtforms.validators import Email, EqualTo, InputRequired, Length, NumberRange, Optional, ValidationError
 
 
@@ -56,6 +56,11 @@ class UpdateForm(FlaskForm):
     city = StringField("City", validators=[Optional(), Length(max=150)])
     county = StringField("County", validators=[Optional(), Length(max=150)])
     country = StringField("Country", validators=[Optional(), Length(max=150)])
+    unit_system = SelectField(
+        "Units",
+        validators=[InputRequired()],
+        choices=[("metric", "Metric (kg, cm)"), ("imperial", "Imperial (lb, in)")],
+    )
     submit = SubmitField("Save changes")
 
 
@@ -67,7 +72,7 @@ class WorkoutForm(FlaskForm):
 
 
 class HeightForm(FlaskForm):
-    height = IntegerField("Height", validators=[InputRequired(), NumberRange(min=50, max=300)])
+    height = FloatField("Height", validators=[InputRequired(), NumberRange(min=20, max=300)])
     date = DateField("Date", validators=[InputRequired()])
     submit = SubmitField("Log height")
 

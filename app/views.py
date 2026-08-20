@@ -6,8 +6,10 @@ from sqlalchemy import func
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from . import db
+from .analytics import dashboard_summary, progress_report
 from .forms import ChangePasswordForm, DeleteAccountForm, HeightForm, UpdateForm, WeightForm, WorkoutForm
 from .models import Exercise, Height, User, Weight, Workout, WorkoutSession
+from .units import display_height, display_weight, height_unit, stored_height, stored_weight, weight_unit
 from .workouts import (
     WorkoutError,
     active_session_for,
@@ -63,6 +65,10 @@ def dashboard():
         workouts=workouts,
         recent_sessions=sessions,
         active_session=active_session_for(current_user.id),
+        summary=dashboard_summary(current_user.id, current_user.unit_system),
+        display_weight=display_weight,
+        weight_unit=weight_unit(current_user.unit_system),
+        unit_system=current_user.unit_system,
     )
 
 
@@ -176,6 +182,7 @@ def profile_info():
             current_user.city = form.city.data.strip() if form.city.data else None
             current_user.county = form.county.data.strip() if form.county.data else None
             current_user.country = form.country.data.strip() if form.country.data else None
+            current_user.unit_system = form.unit_system.data
             db.session.commit()
             flash("Profile updated.", "success")
             return redirect(url_for("views.profile_info"))
@@ -185,6 +192,15 @@ def profile_info():
 @views.route("/faq")
 def faq():
     return render_template("faq.html", user=current_user)
+
+
+@views.route("/progress")
+@login_required
+def progress():
+    range_days = request.args.get("range", 90, type=int)
+    exercise_id = request.args.get("exercise_id", type=int)
+    report = progress_report(current_user.id, current_user.unit_system, range_days, exercise_id)
+    return render_template("progress.html", user=current_user, report=report)
 
 
 @views.route("/tracking")
@@ -206,7 +222,8 @@ def tracking():
         workouts=workouts,
         exercises=exercises,
         requested_routine_id=routine_id,
-        active_session_payload=session_payload(active_session) if active_session else None,
+        active_session_payload=session_payload(active_session, current_user.unit_system) if active_session else None,
+        weight_unit=weight_unit(current_user.unit_system),
     )
 
 
@@ -215,7 +232,7 @@ def tracking():
 def start_empty_workout():
     data = request.get_json(silent=True) or {}
     result = start_workout(current_user, data.get("workout_id"))
-    payload = session_payload(result.session)
+    payload = session_payload(result.session, current_user.unit_system)
     return jsonify(
         success=True,
         created=result.created,
@@ -231,7 +248,11 @@ def add_session_exercise():
     data = json_payload()
     session = owned_session(current_user.id, data.get("session_id"), active_only=True)
     item = add_exercise(session, data.get("exercise_id"))
-    return jsonify(success=True, exercise=session_payload(session)["exercises"][-1], session_exercise_id=item.id)
+    return jsonify(
+        success=True,
+        exercise=session_payload(session, current_user.unit_system)["exercises"][-1],
+        session_exercise_id=item.id,
+    )
 
 
 @views.route("/remove_session_exercise", methods=["POST"])
@@ -264,6 +285,7 @@ def add_exercise_set():
         data.get("reps"),
         data.get("weight"),
         data.get("rest_time"),
+        current_user.unit_system,
     )
     return jsonify(success=True, set_id=record.id, message="Set saved.")
 
@@ -377,25 +399,41 @@ def measurements():
     height_form = HeightForm(prefix="height")
     weight_form = WeightForm(prefix="weight")
     if height_form.submit.data and height_form.validate_on_submit():
-        record = db.session.scalar(
-            db.select(Height).where(Height.user_id == current_user.id, Height.date == height_form.date.data)
-        )
-        if record:
-            record.height = height_form.height.data
+        canonical_height = stored_height(height_form.height.data, current_user.unit_system)
+        if not 50 <= canonical_height <= 300:
+            height_form.height.errors.append("Enter a height equivalent to 50–300 cm.")
         else:
-            db.session.add(Height(user=current_user, height=height_form.height.data, date=height_form.date.data))
-        db.session.commit()
-        return redirect(url_for("views.measurements"))
+            record = db.session.scalar(
+                db.select(Height).where(
+                    Height.user_id == current_user.id, Height.date == height_form.date.data
+                )
+            )
+            if record:
+                record.height = round(canonical_height)
+            else:
+                db.session.add(
+                    Height(user=current_user, height=round(canonical_height), date=height_form.date.data)
+                )
+            db.session.commit()
+            return redirect(url_for("views.measurements"))
     if weight_form.submit.data and weight_form.validate_on_submit():
-        record = db.session.scalar(
-            db.select(Weight).where(Weight.user_id == current_user.id, Weight.date == weight_form.date.data)
-        )
-        if record:
-            record.weight = weight_form.weight.data
+        canonical_weight = stored_weight(weight_form.weight.data, current_user.unit_system)
+        if not 20 <= canonical_weight <= 500:
+            weight_form.weight.errors.append("Enter a weight equivalent to 20–500 kg.")
         else:
-            db.session.add(Weight(user=current_user, weight=weight_form.weight.data, date=weight_form.date.data))
-        db.session.commit()
-        return redirect(url_for("views.measurements"))
+            record = db.session.scalar(
+                db.select(Weight).where(
+                    Weight.user_id == current_user.id, Weight.date == weight_form.date.data
+                )
+            )
+            if record:
+                record.weight = canonical_weight
+            else:
+                db.session.add(
+                    Weight(user=current_user, weight=canonical_weight, date=weight_form.date.data)
+                )
+            db.session.commit()
+            return redirect(url_for("views.measurements"))
 
     height_rows = db.session.execute(
         db.select(Height.height, Height.date).where(Height.user_id == current_user.id).order_by(Height.date)
@@ -403,9 +441,9 @@ def measurements():
     weight_rows = db.session.execute(
         db.select(Weight.weight, Weight.date).where(Weight.user_id == current_user.id).order_by(Weight.date)
     ).all()
-    heights = [value for value, _ in height_rows]
+    heights = [display_height(value, current_user.unit_system) for value, _ in height_rows]
     height_dates = [date.strftime("%d %b %y") for _, date in height_rows]
-    weights = [value for value, _ in weight_rows]
+    weights = [display_weight(value, current_user.unit_system) for value, _ in weight_rows]
     weight_dates = [date.strftime("%d %b %y") for _, date in weight_rows]
     return render_template(
         "measurements.html",
@@ -418,4 +456,6 @@ def measurements():
         height_dates=height_dates,
         weights=weights,
         weight_dates=weight_dates,
+        height_unit=height_unit(current_user.unit_system),
+        weight_unit=weight_unit(current_user.unit_system),
     )

@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container py-3" id="tracking-app" data-routine-id="{{ requested_routine_id or '' }}">
+<div class="container py-3" id="tracking-app" data-routine-id="{{ requested_routine_id or '' }}" data-weight-unit="{{ weight_unit }}">
     <div class="row">
         <div class="col-md-12">
             <div class="row">
@@ -31,7 +31,7 @@
                                                         {{ workout.name }}
                                                     </h6>
                                                     <button type="button" class="btn btn-sm btn-delete-plan"
-                                                            onclick="deleteWorkout('{{ workout.id }}', event)">
+                                                            data-delete-workout-id="{{ workout.id }}">
                                                         <i class='bx bxs-trash'></i>
                                                     </button>
                                                 </div>

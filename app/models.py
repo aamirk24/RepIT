@@ -14,6 +14,10 @@ workout_exercise = db.Table(
 
 
 class User(db.Model, UserMixin):
+    __table_args__ = (
+        db.CheckConstraint("unit_system IN ('metric', 'imperial')", name="ck_user_unit_system"),
+    )
+
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(254), unique=True, nullable=False, index=True)
     first_name = db.Column(db.String(100), nullable=False)
@@ -27,6 +31,7 @@ class User(db.Model, UserMixin):
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     password_changed_at = db.Column(db.DateTime(timezone=True))
     session_version = db.Column(db.Integer, nullable=False, default=1)
+    unit_system = db.Column(db.String(10), nullable=False, default="metric")
 
     workouts = db.relationship("Workout", back_populates="creator", cascade="all, delete-orphan")
     workout_sessions = db.relationship("WorkoutSession", back_populates="user", cascade="all, delete-orphan")
@@ -119,6 +124,7 @@ class WorkoutSession(db.Model):
         db.CheckConstraint("end_time IS NULL OR end_time >= start_time", name="ck_workout_session_time_order"),
         db.CheckConstraint("length(trim(name)) BETWEEN 1 AND 150", name="ck_workout_session_name_length"),
         db.CheckConstraint("notes IS NULL OR length(notes) <= 2000", name="ck_workout_session_notes_length"),
+        db.Index("ix_workout_session_user_start", "user_id", "start_time"),
         db.Index(
             "uq_workout_session_active_user",
             "user_id",
@@ -160,7 +166,7 @@ class SessionExercise(db.Model):
     workout_session_id = db.Column(
         db.Integer, db.ForeignKey("workout_session.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    exercise_id = db.Column(db.Integer, db.ForeignKey("exercise.id"), nullable=False)
+    exercise_id = db.Column(db.Integer, db.ForeignKey("exercise.id"), nullable=False, index=True)
     order = db.Column(db.Integer, nullable=False)
     exercise_name = db.Column(db.String(150), nullable=False)
     target_name = db.Column(db.String(150), nullable=False)

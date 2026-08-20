@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nameInput = document.getElementById('active-workout-name');
     const notesInput = document.getElementById('active-workout-notes');
     const status = document.getElementById('workout-status');
+    const preferredWeightUnit = app.dataset.weightUnit;
     const searchModal = new bootstrap.Modal(document.getElementById('exerciseSearchModal'));
     let session = initialState;
     let timerHandle = null;
@@ -61,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
         row.innerHTML = `
             <div class="col-12 col-sm-2 set-label"></div>
             <div class="col-4 col-sm-2"><input type="number" min="1" class="form-control form-control-sm reps-input" aria-label="Repetitions" placeholder="Reps"></div>
-            <div class="col-4 col-sm-3"><input type="number" min="0" step="0.25" class="form-control form-control-sm weight-input" aria-label="Weight in kilograms" placeholder="Weight kg"></div>
+            <div class="col-4 col-sm-3"><input type="number" min="0" step="0.25" class="form-control form-control-sm weight-input" aria-label="Weight in ${preferredWeightUnit}" placeholder="Weight ${preferredWeightUnit}"></div>
             <div class="col-4 col-sm-2"><input type="number" min="0" class="form-control form-control-sm rest-input" aria-label="Rest in seconds" placeholder="Rest sec"></div>
             <div class="col-12 col-sm-3 d-flex gap-2"><button type="button" class="btn btn-sm btn-signup save-set-btn">Save</button><button type="button" class="btn btn-sm btn-delete remove-set-btn">Remove</button></div>`;
         row.querySelector('.reps-input').value = set.reps ?? '';

@@ -37,7 +37,7 @@
                     <thead class="table-dark">
                         <tr>
                             <th scope="col">Date</th>
-                            <th scope="col">Height (cm)</th>
+                            <th scope="col">Height ({{ height_unit }})</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -66,7 +66,7 @@
                   <div class="mb-3">
                       <label>Height</label>
                       <div class="input-group">
-                          {{ heightForm.height(class="form-control login-field text", placeholder="Height (in cms)") }}
+                          {{ heightForm.height(class="form-control login-field text", placeholder="Height in " ~ height_unit) }}
                       </div>
                       {% for error in heightForm.height.errors %}
                           <div class="text-danger small mt-1">{{ error }}</div>
@@ -124,7 +124,7 @@
                     <thead class="table-dark">
                         <tr>
                             <th scope="col">Date</th>
-                            <th scope="col">Weight (kg)</th>
+                            <th scope="col">Weight ({{ weight_unit }})</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -153,7 +153,7 @@
                   <div class="mb-3">
                       <label>Weight</label>
                       <div class="input-group">
-                          {{ weightForm.weight(class="form-control login-field text", placeholder="Weight (in kgs)") }}
+                          {{ weightForm.weight(class="form-control login-field text", placeholder="Weight in " ~ weight_unit) }}
                       </div>
                       {% for error in weightForm.weight.errors %}
                           <div class="text-danger small mt-1">{{ error }}</div>
@@ -190,7 +190,7 @@
             data: {
                 labels: {{ height_dates|tojson|safe }},
                 datasets: [{
-                    label: 'Height (cm)',
+                    label: 'Height ({{ height_unit }})',
                     data: {{ heights|tojson|safe }},
                     borderColor: 'black',
                     tension: 0
@@ -222,7 +222,7 @@
             data: {
                 labels: {{ weight_dates|tojson|safe }},
                 datasets: [{
-                    label: 'Weight (kg)',
+                    label: 'Weight ({{ weight_unit }})',
                     data: {{ weights|tojson|safe }},
                     borderColor: 'black',
                     tension: 0

@@ -12,6 +12,13 @@
     </div>
     {% endif %}
 
+    <section class="row g-3 mb-4" aria-label="Last 30 days">
+        {% for label, value in [('Workouts', summary.workouts), ('Completed sets', summary.sets), ('Training volume', summary.volume|string + ' ' + weight_unit), ('Training time', summary.durationHours|string + ' hr')] %}
+        <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body"><p class="small text-muted mb-1">{{ label }} · 30 days</p><p class="h4 mb-0">{{ value }}</p></div></div></div>
+        {% endfor %}
+        <div class="col-12"><a href="{{ url_for('views.progress') }}">View detailed progress and personal records →</a></div>
+    </section>
+
     <div class="row">
         <!-- Workout History -->
         <div class="col-lg-8">
@@ -34,7 +41,7 @@
                                     </p>
                                 </div>
                                 <button type="button" class="btn btn-sm btn-delete"
-                                                onclick="deleteSession('{{ session.id }}', event)">
+                                        data-delete-session-id="{{ session.id }}">
                                     <i class='bx bxs-trash' style="font-size: 18px"></i>
                                 </button>
                             </div>
@@ -93,7 +100,7 @@
                                                             </div>
                                                             <div class="weight col-3 mb-0">
                                                                 <ul class="mb-0">
-                                                                    <li class="mb-0">{{ (set.weight|string + ' kg') if set.weight is not none else 'Bodyweight' }}</li>
+                                                                    <li class="mb-0">{{ (display_weight(set.weight, unit_system)|string + ' ' + weight_unit) if set.weight is not none else 'Bodyweight' }}</li>
                                                                 </ul>
                                                             </div>
                                                             <div class="weight col-4 mb-0">
@@ -138,7 +145,7 @@
                                             {{ workout.name }}
                                         </h6>
                                         <button type="button" class="btn btn-sm btn-delete"
-                                                onclick="deleteWorkout('{{ workout.id }}', event)">
+                                                data-delete-workout-id="{{ workout.id }}">
                                             <i class='bx bxs-trash'></i>
                                         </button>
                                     </div>

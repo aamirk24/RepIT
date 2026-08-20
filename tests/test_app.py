@@ -1,9 +1,11 @@
 import os
 import tempfile
 import unittest
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 from app import create_app, db
+from app.analytics import progress_report
 from app.models import Exercise, ExerciseSet, Height, SessionExercise, User, Weight, Workout, WorkoutSession
 from app.seed import CATALOG_SOURCE, CATALOG_VERSION, FreeExerciseDbProvider, seed_exercises
 from app.config import normalize_database_url
@@ -194,7 +196,7 @@ class RepITTestCase(unittest.TestCase):
 
     def test_authenticated_pages_render(self):
         self.signup()
-        for path in ("/", "/exercise", "/create_workout", "/tracking", "/profile-info", "/measurements", "/account", "/faq"):
+        for path in ("/", "/exercise", "/create_workout", "/tracking", "/progress", "/profile-info", "/measurements", "/account", "/faq"):
             with self.subTest(path=path):
                 response = self.client.get(path)
                 self.assertEqual(response.status_code, 200)
@@ -458,6 +460,134 @@ class RepITTestCase(unittest.TestCase):
         response = self.client.post("/end_workout_session", json={"session_id": session_id})
         self.assertEqual(response.status_code, 409)
         self.assertIn(b"at least one completed set", response.data)
+
+    def test_progress_report_calculates_volume_records_frequency_and_history(self):
+        self.signup()
+        now = datetime(2026, 8, 20, 12, tzinfo=timezone.utc)
+        with self.app.app_context():
+            user = db.session.scalar(db.select(User).where(User.email == "user@example.com"))
+            exercise = db.session.scalar(db.select(Exercise).order_by(Exercise.id))
+            completed = WorkoutSession(
+                user=user,
+                name="Strength session",
+                start_time=now - timedelta(days=1, hours=1),
+                end_time=now - timedelta(days=1),
+            )
+            session_exercise = SessionExercise(
+                workout_session=completed,
+                exercise=exercise,
+                order=1,
+                exercise_name="Historical Exercise Name",
+                target_name="Historical Target",
+                equipment_name="barbell",
+            )
+            session_exercise.sets.extend(
+                [
+                    ExerciseSet(set_number=1, reps=5, weight=100, is_completed=True),
+                    ExerciseSet(set_number=2, reps=10, weight=80, is_completed=True),
+                    ExerciseSet(set_number=3, reps=20, weight=None, is_completed=True),
+                    ExerciseSet(set_number=4, reps=15, weight=200, is_completed=True),
+                    ExerciseSet(set_number=5, reps=1, weight=500, is_completed=False),
+                ]
+            )
+            active = WorkoutSession(user=user, name="Ignored active workout", start_time=now)
+            active_exercise = SessionExercise(
+                workout_session=active,
+                exercise=exercise,
+                order=1,
+                exercise_name=exercise.name,
+                target_name=exercise.target,
+                equipment_name=exercise.equipment,
+            )
+            active_exercise.sets.append(
+                ExerciseSet(set_number=1, reps=10, weight=999, is_completed=True)
+            )
+            db.session.add_all([completed, active])
+            db.session.commit()
+            exercise_id = exercise.id
+
+            report = progress_report(user.id, "metric", range_days=30, now=now)
+            self.assertEqual(report["summary"]["workouts"], 1)
+            self.assertEqual(report["summary"]["sets"], 4)
+            self.assertEqual(report["summary"]["reps"], 50)
+            self.assertEqual(report["summary"]["volume"], 4300)
+            self.assertEqual(report["summary"]["durationHours"], 1)
+            self.assertEqual(report["streakWeeks"], 1)
+            self.assertEqual(report["records"][0]["name"], "Historical Exercise Name")
+            self.assertEqual(report["records"][0]["heaviestWeight"], 200)
+            self.assertEqual(report["records"][0]["estimatedOneRepMax"], 116.7)
+            self.assertEqual(report["records"][0]["maxReps"], 20)
+            self.assertEqual(report["exerciseHistory"][0]["volume"], 4300)
+        response = self.client.get(f"/progress?range=30&exercise_id={exercise_id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Historical Exercise Name", response.data)
+        self.assertIn(b"Estimated 1RM trend", response.data)
+        self.assertIn(b"View accessible weekly data table", response.data)
+
+    def test_progress_is_scoped_to_the_authenticated_user(self):
+        self.signup("owner@example.com", "owner")
+        now = datetime.now(timezone.utc)
+        with self.app.app_context():
+            owner = db.session.scalar(db.select(User).where(User.email == "owner@example.com"))
+            exercise = db.session.scalar(db.select(Exercise).order_by(Exercise.id))
+            session = WorkoutSession(
+                user=owner,
+                name="Owner workout",
+                start_time=now - timedelta(hours=1),
+                end_time=now,
+            )
+            item = SessionExercise(
+                workout_session=session,
+                exercise=exercise,
+                order=1,
+                exercise_name=exercise.name,
+                target_name=exercise.target,
+                equipment_name=exercise.equipment,
+            )
+            item.sets.append(ExerciseSet(set_number=1, reps=5, weight=100, is_completed=True))
+            db.session.add(session)
+            db.session.commit()
+        self.client.post("/logout")
+        self.signup("viewer@example.com", "viewer")
+        response = self.client.get("/progress")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Complete a workout to start building personal records", response.data)
+        self.assertNotIn(b"Owner workout", response.data)
+
+    def test_imperial_preference_converts_inputs_and_workout_loads(self):
+        self.signup()
+        response = self.client.post(
+            "/profile-info",
+            data={"first_name": "Test", "username": "user123", "unit_system": "imperial"},
+            follow_redirects=True,
+        )
+        self.assertIn(b"Imperial", response.data)
+        self.client.post(
+            "/measurements",
+            data={"weight-weight": 220.4623, "weight-date": "2026-08-20", "weight-submit": "Log weight"},
+        )
+        with self.app.app_context():
+            self.assertAlmostEqual(db.session.scalar(db.select(Weight.weight)), 100, places=2)
+            exercise_id = db.session.scalar(db.select(Exercise.id))
+        session_id = self.client.post("/start_empty_workout", json={}).get_json()["session_id"]
+        self.client.post(
+            "/add_session_exercise", json={"session_id": session_id, "exercise_id": exercise_id}
+        )
+        self.client.post(
+            "/add_exercise_set",
+            json={
+                "session_id": session_id,
+                "exercise_id": exercise_id,
+                "set_number": 1,
+                "reps": 5,
+                "weight": 220.4623,
+            },
+        )
+        with self.app.app_context():
+            self.assertAlmostEqual(db.session.scalar(db.select(ExerciseSet.weight)), 100, places=2)
+        response = self.client.get("/tracking")
+        self.assertIn(b'"weight": 220.5', response.data)
+        self.assertIn(b'data-weight-unit="lb"', response.data)
 
     def test_user_cannot_modify_another_users_session(self):
         self.signup("owner@example.com", "owner")
